@@ -1,0 +1,63 @@
+/***********************************************************************
+ * @file uds.h
+ * @brief  
+ * @history
+ * Date        Version    Author    description
+ * ==========  =========  ========= =======================================
+ * 2022-04-12  V1.0       Wcy       Create
+ *
+ * @Copyright (C)  2022  Jixing. all right reserved
+***********************************************************************/
+#ifndef __UDS_H__
+#define __UDS_H__
+
+#ifdef UDS_GLOABL
+#define UDS_EXT
+#else
+#define UDS_EXT extern
+#endif
+
+/* common data type defination */
+typedef unsigned int                uint32_t;
+typedef unsigned short              uint16_t;
+typedef unsigned char               uint8_t;
+typedef unsigned char               bool_t;
+typedef int                         int32_t;
+typedef short                       int16_t;
+typedef char                        int8_t;
+typedef float                       float32;
+typedef double                      float64;
+
+#ifdef false
+#undef false
+#endif 
+#ifdef true
+#undef true
+#endif 
+
+#define false                       0u
+#define true                        1u
+
+
+
+/* data type for transfer layer */
+
+typedef enum {
+
+} ;
+
+
+#define UDS_WAIT_FC_TIMEOUT         (t_As + t_Bs)   /* when we are a sender */
+#define UDS_WAIT_CF_TIMEOUT         (t_Cr)          /* when we are a receiver, and we got a cf already. */
+
+
+UDS_EXT uint16_t uds_tp_wait_fc_timer;
+UDS_EXT uint16_t uds_tp_wait_cf_timer;
+
+
+
+/* data type for application layer */
+
+
+
+#endif // __UDS_H__
