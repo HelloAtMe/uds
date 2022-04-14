@@ -8,33 +8,25 @@
  *
  * @Copyright (C)  2022  Jixing. all right reserved
 ***********************************************************************/
-#ifndef __UDS_CFG_H__
-#define __UDS_CFG_H__
-
 
 
 /* data type for transfer layer */
-#define t_Ar                25u
-#define t_Cr                150u
-#define t_As                25u
-#define t_Bs                75u
+#define UDS_TP_Ar                   25u
+#define UDS_TP_Cr                   150u
+#define UDS_TP_As                   25u
+#define UDS_TP_Bs                   75u
 
-#define t_Cs                (t_Cr - t_As)
-#define t_Br                (t_Bs - t_Ar)
-
-#define t_STmin             0u
-#define n_BS                0u
+#define UDS_TP_STmin                0u
+#define UDS_TP_BS                   0u
 
 
-#define UDS_RX_FUNC_ID      0x7DFu
-#define UDS_RX_PHY_ID       0x7E2u
-#define UDS_TX_RESP_ID      0x7EAu
+#define UDS_TP_FUNCTION_ADDR        0x7DFu
+#define UDS_TP_PHYSICAL_ADDR        0x7E2u
+#define UDS_TP_TRANSPORT_ADDR       0x7EAu
 
-#define UDS_FILL_VALUE      0x55u
+#define UDS_FILL_VALUE              0x55u
 
 /* data type for application layer */
 
 
 
-
-#endif // __UDS_CFG_H__

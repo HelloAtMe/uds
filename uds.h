@@ -11,6 +11,12 @@
 #ifndef __UDS_H__
 #define __UDS_H__
 
+
+#include "uds_cfg.def"
+#define UDS_TP_Cs                (UDS_TP_Cr - UDS_TP_As)
+#define UDS_TP_Br                (UDS_TP_Bs - UDS_TP_Ar)
+
+
 #ifdef UDS_GLOABL
 #define UDS_EXT
 #else
@@ -22,9 +28,9 @@ typedef unsigned int                uint32_t;
 typedef unsigned short              uint16_t;
 typedef unsigned char               uint8_t;
 typedef unsigned char               bool_t;
-typedef int                         int32_t;
-typedef short                       int16_t;
-typedef char                        int8_t;
+typedef signed   int                int32_t;
+typedef signed   short              int16_t;
+typedef signed   char               int8_t;
 typedef float                       float32;
 typedef double                      float64;
 
@@ -38,6 +44,10 @@ typedef double                      float64;
 #define false                       0u
 #define true                        1u
 
+/* typedef enum {
+    off = 0,
+    on,
+} uds_switch_status_t; */
 
 
 /* data type for transfer layer */
@@ -47,12 +57,13 @@ typedef enum {
 } ;
 
 
-#define UDS_WAIT_FC_TIMEOUT         (t_As + t_Bs)   /* when we are a sender */
-#define UDS_WAIT_CF_TIMEOUT         (t_Cr)          /* when we are a receiver, and we got a cf already. */
+#define UDS_TP_WAIT_FC_TIMEOUT         (UDS_TP_As + UDS_TP_Bs)   /* when we are a sender */
+#define UDS_TP_WAIT_CF_TIMEOUT         (UDS_TP_Cr)          /* when we are a receiver, and we got a cf already. */
 
-
-UDS_EXT uint16_t uds_tp_wait_fc_timer;
-UDS_EXT uint16_t uds_tp_wait_cf_timer;
+/* UDS_EXT uds_switch_status_t uds_tp_wait_fc_timer_switch;
+UDS_EXT uds_switch_status_t uds_tp_wait_cf_timer_switch; */
+UDS_EXT uint16_t            uds_tp_wait_fc_timer;
+UDS_EXT uint16_t            uds_tp_wait_cf_timer;
 
 
 
