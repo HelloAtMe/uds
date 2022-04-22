@@ -43,6 +43,28 @@ typedef double                      float64;
 
 #define false                       0u
 #define true                        1u
+/* uds queue contain can frame */
+typedef struct {
+    void *qbuf;
+    void *qstart;
+    void *qend;
+    void *qin;
+    void *qout;
+    uint8_t qentries;   /* buf have value number */
+    uint8_t qsize;      /* buf size */
+} uds_q_t;
+
+
+typedef enum {
+    UDS_Q_OK = 0,
+    UDS_Q_FULL,
+    UDS_Q_EMPTY,
+} uds_q_rslt;
+
+
+uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem);
+uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem);
+uds_q_rslt uds_qflush(uds_q_t *q);
 
 /** implementation of network layer and transport layer with
  *  reference to the standard of iso15765, 
@@ -51,11 +73,17 @@ typedef double                      float64;
  * 2. half duplex
  * 3. not supported remote diagnotic
 */
-#define UDS_TP_CAN_DL               8u
-#define UDS_TP_MSG_LEN              512u
+
+#define UDS_TP_CAN_DL                   8u
+#define UDS_TP_IN_SZ                    10u
+#define UDS_TP_BUF_SZ                   512u
+
+#define UDS_TP_WAIT_FC_TIMEOUT          (UDS_TP_As + UDS_TP_Bs)  /* when we are a sender */
+#define UDS_TP_WAIT_CF_TIMEOUT          (UDS_TP_Cr)              /* when we are a receiver, and we got a cf already. */
+
 
 typedef enum {
-    N_PCI_SF = 0,   /* single frame */
+    N_PCI_SF = 0u,   /* single frame */
     N_PCI_FF,       /* first frame */
     N_PCI_CF,       /* consecutive frame */
     N_PCI_FC,       /* flow control */
@@ -63,16 +91,32 @@ typedef enum {
 
 
 typedef enum {
-    N_FS_CTS = 0,   /* continue to send */
+    N_FS_CTS = 0u,   /* continue to send */
     N_FS_WAIT,      /* wait */
     N_FS_OVFLW,     /* over flow buffer */
 } uds_tp_flow_sts_t;
 
 
 typedef enum {
-    N_TA_T_FUN = 0,   /* function address */
-    N_TA_T_PHY,       /* physical address */
-} uds_tp_ai_tt_t;
+    N_OK            = 0x0000u,
+    N_TIMEOUT_A     = 0x0001u,
+    N_TIMEOUT_Bs    = 0x0002u,
+    N_TIMEOUT_Cr    = 0x0004u,
+    N_WORNG_SN      = 0x0008u,
+    N_INVALID_FS    = 0x0010u,
+    N_UNEXP_PDU     = 0x0020u,
+    N_WFT_OVRN      = 0x0040u,
+    N_BUFFER_OVFLW  = 0x0080u,
+} uds_tp_rslt_t;
+
+
+/* only support the standard can bus */
+typedef struct 
+{
+    uint16_t    id;
+    uint16_t    dlc;
+    uint8_t     msg[UDS_TP_CAN_DL];
+} can_std_frame_t;
 
 
 typedef struct {
@@ -85,36 +129,32 @@ typedef struct {
 } uds_tp_pci_t;
 
 
-typedef struct {
-    uds_tp_ai_tt_t  tt;     /* used to send out frame, */
-    uds_tp_pci_t    pci;    
-    uint8_t         dt[UDS_TP_CAN_DL];
-} uds_tp_pdu_t;
-
-
 typedef enum {
     N_STS_IDLE = 0,
 } stream_sts_t;
 
 
 typedef struct {
-    uds_tp_pdu_t    pdu;
+    uds_tp_pci_t    pci;
     stream_sts_t    sts;
     uint8_t         cf_cnt;     /* sequence number count */
-    uint8_t         wf_cnt;     /* wait fc count */
-    uint8_t msg[UDS_TP_MSG_LEN];
+    uds_q_t         q;
+    uint8_t         buf[UDS_TP_BUF_SZ];
 } uds_tp_iostream_t;
 
 
 typedef struct {
     uds_tp_iostream_t   in;
     uds_tp_iostream_t   out;
+    uds_q_t             in_q;
+    can_std_frame_t     in_buf[UDS_TP_IN_SZ];
+    uint8_t             wf_cnt;     /* wait fc count only valid for receiver*/
 } uds_tp_layer_t;
 
+UDS_EXT uds_tp_layer_t uds_tp_data;
 
-#define UDS_TP_WAIT_FC_TIMEOUT         (UDS_TP_As + UDS_TP_Bs)  /* when we are a sender */
-#define UDS_TP_WAIT_CF_TIMEOUT         (UDS_TP_Cr)              /* when we are a receiver, and we got a cf already. */
-
+void uds_tp_init(uds_tp_layer_t *tp);
+void uds_tp_process(uds_tp_layer_t *tp);
 
 
 /* data type for application layer */
