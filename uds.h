@@ -66,6 +66,50 @@ uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem);
 uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem);
 uds_q_rslt uds_qflush(uds_q_t *q);
 
+
+/** data link layer 
+ *  only support the classic can and standard id
+*/
+#define UDS_DL_CAN_DL                   8u
+#define UDS_DL_IN_SZ                    10u
+
+/* only support the standard can bus */
+typedef enum {
+    L_STS_IDLE = 0,
+    L_STS_READY,
+} uds_dl_sts_t;
+
+
+typedef struct {
+    uint16_t    id;
+    uint16_t    dlc;
+    uint8_t     msg[UDS_DL_CAN_DL];
+} can_std_frame_t;
+
+
+typedef struct {
+    uds_dl_sts_t        sts;
+    can_std_frame_t    *pbuf;
+} uds_dl_instream_t;
+
+
+typedef struct {
+    uds_dl_sts_t        sts;
+    can_std_frame_t     buf;
+} uds_dl_outstream_t;
+
+
+typedef struct {
+    uds_dl_instream_t  in;
+    uds_dl_outstream_t out;
+    uds_q_t            in_q;
+    can_std_frame_t    in_buf[UDS_DL_IN_SZ];
+} uds_dl_layer_t;
+
+
+void uds_dl_init(uds_dl_layer_t *pdl);
+void uds_dl_process(uds_dl_layer_t *pdl);
+
 /** implementation of network layer and transport layer with
  *  reference to the standard of iso15765, 
  * 1. timeout error will include the N_TIMEOUT_Bs and  
@@ -74,8 +118,6 @@ uds_q_rslt uds_qflush(uds_q_t *q);
  * 3. not supported remote diagnotic
 */
 
-#define UDS_TP_CAN_DL                   8u
-#define UDS_TP_IN_SZ                    10u
 #define UDS_TP_BUF_SZ                   512u
 
 #define UDS_TP_WAIT_FC_TIMEOUT          (UDS_TP_As + UDS_TP_Bs)  /* when we are a sender */
@@ -110,17 +152,8 @@ typedef enum {
 } uds_tp_rslt_t;
 
 
-/* only support the standard can bus */
-typedef struct 
-{
-    uint16_t    id;
-    uint16_t    dlc;
-    uint8_t     msg[UDS_TP_CAN_DL];
-} can_std_frame_t;
-
-
 typedef struct {
-    uds_tp_pci_type_t   pt;     /* pci type */
+    uds_tp_pci_type_t   pt;
     uds_tp_flow_sts_t   fs;     /* flow status */
     uint16_t            dl;     /* data length */
     uint8_t             sn;     /* sequence number */
@@ -131,34 +164,63 @@ typedef struct {
 
 typedef enum {
     N_STS_IDLE = 0,
+    N_STS_BUSY,
+    N_STS_REDAY,
+    N_STS_ERROR,
+    N_STS_BUSY_WAIT,
 } stream_sts_t;
+
+
+typedef struct 
+{   
+    uds_tp_flow_sts_t fs;
+    uint8_t bs;
+    uint8_t stmin;
+} uds_tp_fc_cfg_t;
 
 
 typedef struct {
     uds_tp_pci_t    pci;
+    uds_tp_fc_cfg_t cfg;        
     stream_sts_t    sts;
-    uint8_t         cf_cnt;     /* sequence number count */
-    uds_q_t         q;
+    uint16_t        cf_cnt;     /* sequence number count */
+    uint16_t        buf_pos;
     uint8_t         buf[UDS_TP_BUF_SZ];
-} uds_tp_iostream_t;
+} uds_tp_instream_t;
 
 
 typedef struct {
-    uds_tp_iostream_t   in;
-    uds_tp_iostream_t   out;
-    uds_q_t             in_q;
-    can_std_frame_t     in_buf[UDS_TP_IN_SZ];
-    uint8_t             wf_cnt;     /* wait fc count only valid for receiver*/
+    uds_tp_pci_t    pci;
+    uds_tp_fc_cfg_t cfg;        
+    stream_sts_t    sts;
+    uint16_t        cf_cnt;     /* sequence number count */
+    uint16_t        wf_max;
+    uint16_t        wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain fc */
+    // uint16_t        buf_sz; the ff dl can represent this param
+    uint16_t        buf_pos;
+    uint8_t         buf[UDS_TP_BUF_SZ];
+} uds_tp_outstream_t;
+
+
+typedef struct {
+    uds_tp_instream_t   in;
+    uds_tp_outstream_t  out;
 } uds_tp_layer_t;
 
-UDS_EXT uds_tp_layer_t uds_tp_data;
 
-void uds_tp_init(uds_tp_layer_t *tp);
-void uds_tp_process(uds_tp_layer_t *tp);
+void uds_tp_init(uds_tp_layer_t *ptp);
+void uds_tp_process(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
 
+/**
+ * @brief uds app layer, implementation of iso14229-1-3
+ * 
+ */
 
-/* data type for application layer */
+typedef struct {
+    uint8_t sid;
+    void (*)(void);
+} uds_ap_ser_t;
 
-
-
+void uds_init();
+void uds_process();
 #endif // __UDS_H__
