@@ -52,18 +52,10 @@ typedef double                      float64;
 
 /* data type for transfer layer */
 
-typedef enum {
-
-} ;
-
 
 #define UDS_TP_WAIT_FC_TIMEOUT         (UDS_TP_As + UDS_TP_Bs)   /* when we are a sender */
 #define UDS_TP_WAIT_CF_TIMEOUT         (UDS_TP_Cr)          /* when we are a receiver, and we got a cf already. */
 
-/* UDS_EXT uds_switch_status_t uds_tp_wait_fc_timer_switch;
-UDS_EXT uds_switch_status_t uds_tp_wait_cf_timer_switch; */
-UDS_EXT uint16_t            uds_tp_wait_fc_timer;
-UDS_EXT uint16_t            uds_tp_wait_cf_timer;
 
 
 
