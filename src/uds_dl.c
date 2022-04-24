@@ -62,10 +62,12 @@ void uds_recv_frame(uds_q_t *q, can_std_frame_t fr)
 void uds_send_frame(can_std_frame_t *fr)
 {
     fr->id = UDS_TP_TRANSPORT_ADDR;
-    fr->dlc = 8;
-    
+    fr->dlc = UDS_DL_CAN_DL;
+
     /* send action */
-    if (fr->msg[0] == 0x30) {
-        printf("%s", "CF");
+    for (uint8_t i = 0; i < fr->dlc; i++) {
+        printf("%02x ", fr->msg[i]);
     }
+    printf("\n");
+
 }

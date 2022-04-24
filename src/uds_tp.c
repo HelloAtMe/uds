@@ -37,7 +37,7 @@ void uds_tp_init(uds_tp_layer_t *ptp)
     /* as a receiver, a ff received will send a fc */
     ptp->in.cfg.bs       = 0;
     ptp->in.cfg.stmin    = 10;
-    ptp->out.wf_max      = 100;
+    ptp->out.wf_max      = 2;
 
     ptp->in.sts = N_STS_IDLE;
     ptp->out.sts = N_STS_IDLE;
