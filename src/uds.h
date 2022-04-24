@@ -45,7 +45,6 @@ typedef double                      float64;
 #define true                        1u
 /* uds queue contain can frame */
 typedef struct {
-    void *qbuf;
     void *qstart;
     void *qend;
     void *qin;
@@ -62,8 +61,8 @@ typedef enum {
 } uds_q_rslt;
 
 
-uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem);
-uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem);
+uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem, uint16_t sz);
+uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz);
 uds_q_rslt uds_qflush(uds_q_t *q);
 
 
@@ -89,19 +88,19 @@ typedef struct {
 
 typedef struct {
     uds_dl_sts_t        sts;
-    can_std_frame_t    *pbuf;
-} uds_dl_instream_t;
-
-
-typedef struct {
-    uds_dl_sts_t        sts;
     can_std_frame_t     buf;
-} uds_dl_outstream_t;
+} uds_dl_iostream_t;
+
+
+// typedef struct {
+//     uds_dl_sts_t        sts;
+//     can_std_frame_t     buf;
+// } uds_dl_outstream_t;
 
 
 typedef struct {
-    uds_dl_instream_t  in;
-    uds_dl_outstream_t out;
+    uds_dl_iostream_t  in;
+    uds_dl_iostream_t  out;
     uds_q_t            in_q;
     can_std_frame_t    in_buf[UDS_DL_IN_SZ];
 } uds_dl_layer_t;
@@ -140,15 +139,16 @@ typedef enum {
 
 
 typedef enum {
-    N_OK            = 0x0000u,
-    N_TIMEOUT_A     = 0x0001u,
-    N_TIMEOUT_Bs    = 0x0002u,
-    N_TIMEOUT_Cr    = 0x0004u,
-    N_WORNG_SN      = 0x0008u,
-    N_INVALID_FS    = 0x0010u,
-    N_UNEXP_PDU     = 0x0020u,
-    N_WFT_OVRN      = 0x0040u,
-    N_BUFFER_OVFLW  = 0x0080u,
+    N_OK            = 0x0u,
+    N_ERROR,
+    // N_TIMEOUT_A     = 0x0001u,
+    // N_TIMEOUT_Bs    = 0x0002u,
+    // N_TIMEOUT_Cr    = 0x0004u,
+    // N_WORNG_SN      = 0x0008u,
+    // N_INVALID_FS    = 0x0010u,
+    // N_UNEXP_PDU     = 0x0020u,
+    // N_WFT_OVRN      = 0x0040u,
+    // N_BUFFER_OVFLW  = 0x0080u,
 } uds_tp_rslt_t;
 
 
@@ -196,7 +196,7 @@ typedef struct {
     uint16_t        cf_cnt;     /* sequence number count */
     uint16_t        wf_max;
     uint16_t        wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain fc */
-    // uint16_t        buf_sz; the ff dl can represent this param
+    // uint16_t        buf_sz; remove it, because the pci.dl can represent this param
     uint16_t        buf_pos;
     uint8_t         buf[UDS_TP_BUF_SZ];
 } uds_tp_outstream_t;
@@ -218,9 +218,13 @@ void uds_tp_process(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
 
 typedef struct {
     uint8_t sid;
-    void (*)(void);
+    void (*sfunc)(void);
 } uds_ap_ser_t;
 
-void uds_init();
-void uds_process();
+
+// void uds_init();
+// void uds_process();
+void uds_recv_frame(uds_q_t *q, can_std_frame_t fr);
+void uds_send_frame(can_std_frame_t *fr);
+
 #endif // __UDS_H__
