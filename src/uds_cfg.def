@@ -16,7 +16,7 @@
 #define UDS_TP_As                   25u
 #define UDS_TP_Bs                   75u
 
-#define UDS_TP_STmin                0u
+#define UDS_TP_STmin                10u
 #define UDS_TP_BS                   0u
 
 

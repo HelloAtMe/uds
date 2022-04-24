@@ -27,11 +27,16 @@ SOURCE_DIR = 	$(PROJ_DIR)src \
 
 
 #------------------------------  COMPILER INFO  ------------------------------#
+ifdef WIN32
 CC = C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\bin\\gcc.exe
 LD = C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\bin\\gcc.exe
 
 GCC_INC_DIR = C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\include
-
+else 
+CC = /usr/bin/gcc
+LD = /usr/bin/gcc
+GCC_INC_DIR = /usr/bin/include
+endif
 # C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\bin\\mingw32-make.exe
 #------------------------------ HEADER FILES  ------------------------------#
 PROJ_INC = -I./src \
@@ -74,7 +79,8 @@ $(OBJECT_PATH)/%.o: %.s
 
 $(TARGET).exe: $(OBJ_FILES)
 	@echo 'Linking files ...'
-	$(LD) -o $(TARGET_PATH)/$(TARGET).exe $(LDFLAGS) $(OBJ_FILES)
+	# $(LD) -o $(TARGET_PATH)/$(TARGET) $(LDFLAGS) $(OBJ_FILES)
+	$(LD) -o $(TARGET_PATH)/$(TARGET)  $(OBJ_FILES)
 
 .PHONY: rebuild	
 rebuild:
