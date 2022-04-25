@@ -181,7 +181,6 @@ void uds_tp_layer_test_process_out(uds_tp_layer_tst_dt_out_t *uds_dt)
         uds_tp_process_out(&uds_ly.tp, &uds_ly.dl);
         uds_dl_process_out(&uds_ly.dl);
 
-
     }
     
 }

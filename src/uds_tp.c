@@ -120,13 +120,10 @@ uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
             break;
         case N_STS_BUSY_WAIT:
             break;
-        case N_STS_IDLE:
-            break;
         case N_STS_ERROR:
-            ptp->out.sts = N_STS_IDLE;
-            break;
         default:
             ptp->out.sts = N_STS_IDLE;
+        case N_STS_IDLE:
             break;
     }
 }
@@ -208,7 +205,7 @@ static void uds_tp_process_in_cf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
                 /* ignore check because the uds tp set bs = 0 */
                 if (ptp->in.cfg.bs > 0) {
                     if (ptp->in.cf_cnt % ptp->in.cfg.bs == 0) {
-                    /* send a flow control action */
+                        /* send a flow control action */
                         ptp->out.sts = N_STS_BUSY;
                         ptp->out.pci.pt = N_PCI_FC;
                         ptp->out.pci.fs = N_FS_CTS;
