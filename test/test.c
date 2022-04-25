@@ -110,15 +110,15 @@ void uds_tp_layer_test(void)
     uds_dl_init(&uds_ly.dl);
     uds_tp_init(&uds_ly.tp);
 
-    // uds_tp_layer_test_process_in(&uds_dts[0]);
-    // uds_tp_layer_test_process_in(&uds_dts[1]);
-    // uds_tp_layer_test_process_in(&uds_dts[2]);
-    // uds_tp_layer_test_process_in(&uds_dts[3]);
-    // uds_tp_layer_test_process_in(&uds_dts[4]);
-    // uds_tp_layer_test_process_in(&uds_dts[5]);
+    uds_tp_layer_test_process_in(&uds_dts[0]);
+    uds_tp_layer_test_process_in(&uds_dts[1]);
+    uds_tp_layer_test_process_in(&uds_dts[2]);
+    uds_tp_layer_test_process_in(&uds_dts[3]);
+    uds_tp_layer_test_process_in(&uds_dts[4]);
+    uds_tp_layer_test_process_in(&uds_dts[5]);
 
     // uds_tp_layer_test_process_out(&uds_dts_o[0]);
-    uds_tp_layer_test_process_out(&uds_dts_o[1]);
+    // uds_tp_layer_test_process_out(&uds_dts_o[1]);
 
 }
 
@@ -126,10 +126,12 @@ void uds_tp_layer_test(void)
 void uds_tp_layer_test_process_in(uds_tp_layer_tst_dt_in_t *uds_dt)
 {
     while (uds_dt->fr_cnt < uds_dt->fr_sz) {
-        uds_recv_frame(&uds_ly.dl.in_q, uds_dt->frs[uds_dt->fr_cnt]);
+        uds_recv_frame(&uds_ly.dl.in_qf, uds_dt->frs[uds_dt->fr_cnt]);
 
-        uds_dl_process(&uds_ly.dl);
-        uds_tp_process(&uds_ly.tp, &uds_ly.dl);
+        uds_dl_process_in(&uds_ly.dl);
+        uds_tp_process_in(&uds_ly.tp, &uds_ly.dl);
+        uds_tp_process_out(&uds_ly.tp, &uds_ly.dl);
+        uds_dl_process_out(&uds_ly.dl);
 
         uds_dt->fr_cnt++;
     }
@@ -163,19 +165,23 @@ void uds_tp_layer_test_process_out(uds_tp_layer_tst_dt_out_t *uds_dt)
     }
 
     while (true) {
-        if (uds_ly.dl.out.sts == L_STS_IDLE && (uds_ly.dl.out.buf.msg[0] & 0x10) == 0x10) {
+        if (uds_ly.dl.out.sts == L_STS_IDLE && (uds_ly.dl.out.fr.dt[0] & 0x10) == 0x10) {
             
-            fr.msg[0] = 0x30 + uds_dt->cfg[uds_dt->cfg_cnt].fs;
-            fr.msg[1] = uds_dt->cfg[uds_dt->cfg_cnt].bs;
-            fr.msg[2] = uds_dt->cfg[uds_dt->cfg_cnt].stmin;
+            fr.dt[0] = 0x30 + uds_dt->cfg[uds_dt->cfg_cnt].fs;
+            fr.dt[1] = uds_dt->cfg[uds_dt->cfg_cnt].bs;
+            fr.dt[2] = uds_dt->cfg[uds_dt->cfg_cnt].stmin;
 
-            uds_recv_frame(&uds_ly.dl.in_q, fr);
+            uds_recv_frame(&uds_ly.dl.in_qf, fr);
 
             uds_dt->cfg_cnt++;
 
         }
-        uds_dl_process(&uds_ly.dl);
-        uds_tp_process(&uds_ly.tp, &uds_ly.dl);
+        uds_dl_process_in(&uds_ly.dl);
+        uds_tp_process_in(&uds_ly.tp, &uds_ly.dl);
+        uds_tp_process_out(&uds_ly.tp, &uds_ly.dl);
+        uds_dl_process_out(&uds_ly.dl);
+
+
     }
     
 }

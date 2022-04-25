@@ -44,6 +44,8 @@ typedef double                      float64;
 
 #define false                       0u
 #define true                        1u
+
+
 /* uds queue contain can frame */
 typedef struct {
     void *qstart;
@@ -67,13 +69,14 @@ uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz);
 uds_q_rslt uds_qflush(uds_q_t *q);
 
 
+
 /** data link layer 
  *  only support the classic can and standard id
-*/
+ */
 #define UDS_DL_CAN_DL                   8u
 #define UDS_DL_IN_SZ                    10u
 
-/* only support the standard can bus */
+// only support the standard can bus 
 typedef enum {
     L_STS_IDLE = 0,
     L_STS_READY,
@@ -83,13 +86,13 @@ typedef enum {
 typedef struct {
     uint16_t    id;
     uint16_t    dlc;
-    uint8_t     msg[UDS_DL_CAN_DL];
+    uint8_t     dt[UDS_DL_CAN_DL];
 } can_std_frame_t;
 
 
 typedef struct {
     uds_dl_sts_t        sts;
-    can_std_frame_t     buf;
+    can_std_frame_t     fr;
 } uds_dl_iostream_t;
 
 
@@ -102,13 +105,16 @@ typedef struct {
 typedef struct {
     uds_dl_iostream_t  in;
     uds_dl_iostream_t  out;
-    uds_q_t            in_q;
-    can_std_frame_t    in_buf[UDS_DL_IN_SZ];
+    uds_q_t            in_qf;
+    can_std_frame_t    in_frs[UDS_DL_IN_SZ];
 } uds_dl_layer_t;
 
 
 void uds_dl_init(uds_dl_layer_t *pdl);
-void uds_dl_process(uds_dl_layer_t *pdl);
+void uds_dl_process_in(uds_dl_layer_t *pdl);
+void uds_dl_process_out(uds_dl_layer_t *pdl);
+
+
 
 /** implementation of network layer and transport layer with
  *  reference to the standard of iso15765, 
@@ -172,8 +178,7 @@ typedef enum {
 } stream_sts_t;
 
 
-typedef struct 
-{   
+typedef struct {   
     uds_tp_flow_sts_t fs;
     uint8_t bs;
     uint8_t stmin;
@@ -210,22 +215,32 @@ typedef struct {
 
 
 void uds_tp_init(uds_tp_layer_t *ptp);
-void uds_tp_process(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
+void uds_tp_process_in(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
+uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
+uds_tp_rslt_t uds_tp_process_to(uds_tp_layer_t *ptp);
+
+
 
 /**
  * @brief uds app layer, implementation of iso14229-1-3
  * 
  */
-
 typedef struct {
     uint8_t sid;
     void (*sfunc)(void);
 } uds_ap_ser_t;
 
 
+
+/**
+ * @brief api of uds
+ * 
+ */
 // void uds_init();
 // void uds_process();
 void uds_recv_frame(uds_q_t *q, can_std_frame_t fr);
 void uds_send_frame(can_std_frame_t *fr);
+
+
 
 #endif // __UDS_H__
