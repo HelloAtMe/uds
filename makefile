@@ -28,16 +28,17 @@ SOURCE_DIR = 	$(PROJ_DIR)src \
 
 #------------------------------  COMPILER INFO  ------------------------------#
 ifdef WIN32
-CC = C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\bin\\gcc.exe
-LD = C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\bin\\gcc.exe
-
-GCC_INC_DIR = C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\include
+COMPILER_PATH = C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64
+CC = $(COMPILER_PATH)/bin/gcc.exe
+LD = $(COMPILER_PATH)/bin/gcc.exe
+GCC_INC_DIR = $(COMPILER_PATH)/include
 else 
 CC = /usr/bin/gcc
 LD = /usr/bin/gcc
 GCC_INC_DIR = /usr/bin/include
 endif
-# C:\\Users\\jxyun\\AppData\\Local\\Nuitka\\Nuitka\\gcc\\x86_64\\mingw64\\bin\\mingw32-make.exe
+
+
 #------------------------------ HEADER FILES  ------------------------------#
 PROJ_INC = -I./src \
 			-I./test \
@@ -58,7 +59,6 @@ ASFLAGS	= $(PROJ_INC) 				\
 LDFLAGS = -Wl,-Map=$(TARGET_PATH)/$(TARGET).map
 
 
-
 #------------------------------ SOUREC FILES  ------------------------------#
 vpath %.c  $(SOURCE_DIR)
 vpath %.s  $(SOURCE_DIR)
@@ -77,10 +77,9 @@ $(OBJECT_PATH)/%.o: %.s
 	@echo 'Building file: $<'
 	$(CC) $(ASFLAGS) -c -o $@ $<
 
-$(TARGET).exe: $(OBJ_FILES)
+$(TARGET): $(OBJ_FILES)
 	@echo 'Linking files ...'
-	# $(LD) -o $(TARGET_PATH)/$(TARGET) $(LDFLAGS) $(OBJ_FILES)
-	$(LD) -o $(TARGET_PATH)/$(TARGET)  $(OBJ_FILES)
+	$(LD) -o $(TARGET_PATH)/$(TARGET) $(LDFLAGS) $(OBJ_FILES)
 
 .PHONY: rebuild	
 rebuild:
@@ -88,8 +87,8 @@ rebuild:
 	$(MAKE) build
 
 build:
-	$(MAKE) $(TARGET).exe
+	$(MAKE) $(TARGET)
 	@echo 'Finish to compile.'
 
 clean:
-	$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET).exe $(TARGET_PATH)/$(TARGET).map
+	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET).exe $(TARGET_PATH)/$(TARGET).map

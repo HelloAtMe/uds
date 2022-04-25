@@ -10,7 +10,8 @@
 ***********************************************************************/
 #ifndef __UDS_H__
 #define __UDS_H__
-
+#include <stdio.h>
+#include <string.h>
 
 #include "uds_cfg.def"
 #define UDS_TP_Cs                (UDS_TP_Cr - UDS_TP_As)

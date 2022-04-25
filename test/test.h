@@ -12,8 +12,6 @@
 #define __TEST_H__
 
 #include "uds.h"
-#include <stdio.h>
-#include <string.h>
 
 
 
