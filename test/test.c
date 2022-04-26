@@ -130,24 +130,27 @@ void uds_tp_layer_test_process_in(uds_tp_layer_tst_dt_in_t *uds_dt)
 
         uds_dl_process_in(&uds_ly.dl);
         uds_tp_process_in(&uds_ly.tp, &uds_ly.dl);
+
+        if (uds_ly.tp.in.sts == N_STS_REDAY) {
+            for (int i = 0; i < uds_ly.tp.in.pci.dl; i++) {
+                printf("%02x ", uds_ly.tp.in.buf[i]);
+            }
+            printf("\n");
+            uds_ly.tp.in.sts = N_STS_IDLE;
+        } 
+
+        if  (uds_ly.tp.in.sts == N_STS_ERROR) {
+            printf("%s\n", "error");
+            uds_ly.tp.in.sts = N_STS_IDLE;
+        }
+        
         uds_tp_process_out(&uds_ly.tp, &uds_ly.dl);
         uds_dl_process_out(&uds_ly.dl);
 
         uds_dt->fr_cnt++;
     }
 
-    if (uds_ly.tp.in.sts == N_STS_REDAY) {
-        for (int i = 0; i < uds_ly.tp.in.pci.dl; i++) {
-            printf("%02x ", uds_ly.tp.in.buf[i]);
-        }
-        printf("\n");
-        uds_ly.tp.in.sts = N_STS_IDLE;
-    } 
-
-    if  (uds_ly.tp.in.sts == N_STS_ERROR) {
-        printf("%s\n", "error");
-        uds_ly.tp.in.sts = N_STS_IDLE;
-    }
+    
 }
 
 

@@ -46,5 +46,13 @@ int main(void)
     test_ptr(&p, &q);
     printf("%d\n", q);
     printf("%d %d\n", q.a[0], q.a[1]);
+
+    unsigned char pk[3] = {0, 0, 0};
+    // for (int i = 0; i < 10000; i++) {
+    //     pk[1] = i;
+    //     printf("%d. [%d] [%d] [%d] \n", i, pk[0], pk[1], pk[2]);
+    // }
+    printf("%d\n", sizeof(pk));
+
     return 0;
 }
