@@ -16,11 +16,13 @@
 uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem, uint16_t sz)
 {   
     if (q->qentries > 0) {
-        for (uint16_t i = 0; i < sz; i++) {
-            *(uint8_t *)elem = *(uint8_t *)q->qout;
-            elem = (uint8_t *)elem + 1;
-            q->qout = (uint8_t *)q->qout + 1;
-        }
+        // for (uint16_t i = 0; i < sz; i++) {
+        //     *(uint8_t *)elem = *(uint8_t *)q->qout;
+        //     elem = (uint8_t *)elem + 1;
+        //     q->qout = (uint8_t *)q->qout + 1;
+        // }
+        memcpy((uint8_t *)q->qout, (uint8_t *)elem, sz);
+        q->qout = (uint8_t *)q->qout + sz;
         q->qentries--;
         if (q->qout == q->qend) {
             q->qout = q->qstart;
@@ -35,11 +37,13 @@ uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem, uint16_t sz)
 uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz)
 {
     if (q->qentries < q->qsize) {
-        for (uint16_t i = 0; i < sz; i++) {
-            *(uint8_t *)q->qin = *(uint8_t *)elem;
-            elem = (uint8_t *)elem + 1;
-            q->qin = (uint8_t *)q->qin + 1;
-        }
+        // for (uint16_t i = 0; i < sz; i++) {
+        //     *(uint8_t *)q->qin = *(uint8_t *)elem;
+        //     elem = (uint8_t *)elem + 1;
+        //     q->qin = (uint8_t *)q->qin + 1;
+        // }
+        memcpy((uint8_t *)q->qin, (uint8_t *)elem, sz);
+        q->qin = (uint8_t *)q->qin + sz;
         q->qentries++;
         if (q->qin == q->qend) {
             q->qin = q->qstart;

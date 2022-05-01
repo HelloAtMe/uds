@@ -43,16 +43,21 @@ int main(void)
 {   
     b_t p = {{1,1}};
     b_t q;
-    test_ptr(&p, &q);
-    printf("%d\n", q);
-    printf("%d %d\n", q.a[0], q.a[1]);
+    b_t *pq;
+
+    printf("%d\n", pq);
+    pq = (b_t *)((char *)pq + 10);
+    printf("%d\n", (int)pq);
+    // test_ptr(&p, &q);
+    // printf("%d\n", q);
+    // printf("%d %d\n", q.a[0], q.a[1]);
 
     unsigned char pk[3] = {0, 0, 0};
     // for (int i = 0; i < 10000; i++) {
     //     pk[1] = i;
     //     printf("%d. [%d] [%d] [%d] \n", i, pk[0], pk[1], pk[2]);
     // }
-    printf("%d\n", sizeof(pk));
-
+    // printf("%d\n", sizeof(pk));
+    
     return 0;
 }
