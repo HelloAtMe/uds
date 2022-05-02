@@ -123,7 +123,6 @@ void uds_dl_process_out(uds_dl_layer_t *pdl);
  * 2. half duplex
  * 3. not supported remote diagnotic
 */
-
 #define UDS_TP_BUF_SZ                   512u
 
 #define UDS_TP_WAIT_FC_TIMEOUT          (UDS_TP_As + UDS_TP_Bs)  /* when we are a sender */
@@ -159,10 +158,17 @@ typedef enum {
 } uds_tp_rslt_t;
 
 
+typedef enum {
+    N_TATYPE_PHYSICAL = 0,
+    N_TATYPE_FUNCTIONAL,
+} uds_tp_tatype_t;
+
+
 typedef struct {
     uds_tp_pci_type_t   pt;
     uds_tp_flow_sts_t   fs;     /* flow status */
     uint16_t            dl;     /* data length */
+    uds_tp_tatype_t     tt;     /* target address type */
     uint8_t             sn;     /* sequence number */
     uint8_t             bs;     /* block size */
     uint8_t             stmin;  /* stmin time */
@@ -175,7 +181,7 @@ typedef enum {
     N_STS_REDAY,
     N_STS_ERROR,
     N_STS_BUSY_WAIT,
-} stream_sts_t;
+} uds_tp_stream_sts_t;
 
 
 typedef struct {   
@@ -186,25 +192,25 @@ typedef struct {
 
 
 typedef struct {
-    uds_tp_pci_t    pci;
-    uds_tp_fc_cfg_t cfg;        
-    stream_sts_t    sts;
-    uint16_t        cf_cnt;     /* sequence number count */
-    uint16_t        buf_pos;
-    uint8_t         buf[UDS_TP_BUF_SZ];
+    uds_tp_pci_t            pci;
+    uds_tp_fc_cfg_t         cfg;        
+    uds_tp_stream_sts_t     sts;
+    uint16_t                cf_cnt;     /* sequence number count */
+    uint16_t                buf_pos;
+    uint8_t                 buf[UDS_TP_BUF_SZ];
 } uds_tp_instream_t;
 
 
 typedef struct {
-    uds_tp_pci_t    pci;
-    uds_tp_fc_cfg_t cfg;        
-    stream_sts_t    sts;
-    uint16_t        cf_cnt;     /* sequence number count */
-    uint16_t        wf_max;
-    uint16_t        wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain fc */
+    uds_tp_pci_t            pci;
+    uds_tp_fc_cfg_t         cfg;        
+    uds_tp_stream_sts_t     sts;
+    uint16_t                cf_cnt;     /* sequence number count */
+    uint16_t                wf_max;
+    uint16_t                wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain fc */
     // uint16_t        buf_sz; remove it, because the pci.dl can represent this param
-    uint16_t        buf_pos;
-    uint8_t         buf[UDS_TP_BUF_SZ];
+    uint16_t                buf_pos;
+    uint8_t                 buf[UDS_TP_BUF_SZ];
 } uds_tp_outstream_t;
 
 
@@ -222,13 +228,122 @@ uds_tp_rslt_t uds_tp_process_to(uds_tp_layer_t *ptp);
 
 
 /**
- * @brief uds app layer, implementation of iso14229-1-3
+ * @brief uds app layer, implementation of iso14229-1
  * 
  */
+typedef enum {
+    /* Diagnostic and Communication Management */
+    DiagnosticSessionControl = 0x10u,
+    ECUReset = 0x11u,
+    SecurityAccess = 0x27u,
+    CommunicationControl = 0x28u,
+    TesterPresent = 0x3Eu,
+    AccessTimingParameter = 0x83u,
+    SecuredDataTransmission = 0x84u,
+    ControlDTCSetting = 0x85u,
+    ResponseOnEvent = 0x86u,
+    LinkControl = 0x87u,
+
+    /* Data Transmission */
+    ReadDataByIdentifier = 0x22u,
+    ReadMemoryByAddress = 0x23u,
+    ReadScalingDataByIdentifier = 0x24u,
+    ReadDataByPeriodicIdentifier = 0x2Au,
+    DynamicallyDefineDataIdentifier = 0x2Cu,
+    WriteDataByIdentifier = 0x2Eu,
+    WriteMemoryByAddress = 0x3Du,
+
+    /* Stored Data Transmission */
+    ClearDiagnosticInformation = 0x14u,
+    ReadDTCInformation = 0x19u,
+
+    /* InputOutput Control */
+    InputOutputControlByIdentifier = 0x2Fu,
+
+    /* Routine */
+    RoutineControl = 0x31u,
+
+    /* Upload Download */
+    RequestDownload = 0x34u,
+    RequestUpload = 0x35u,
+    TransferData = 0x36u,
+    RequestTransferExit = 0x37u,
+    RequestFileTransfer = 0x38u,
+} uds_app_sid_type_t;
+
+
+typedef enum {
+    generalReject = 0x10u,
+    serviceNotSupported = 0x11u,
+    subfunctionNotSupported = 0x12u,
+    incorrectMessageLengthOrInvalidFormat = 0x13u,
+    responseTooLong = 0x14u,
+    busyRepeatRequest = 0x21u,
+    conditionsNotCorrect = 0x22u,
+    requestSequenceError = 0x24u,
+    noResponseFromSubnetComponent = 0x25u,
+    FailurePreventsExecutionOfRequestedAction = 0x26u,
+    requestOutOfRange = 0x31u,
+    securityAccessDenied = 0x33u,
+    invalidKey = 0x35u,
+    exceedNumberOfAttempts = 0x36u,
+    requiredTimeDelayNotExpired = 0x37u,
+    uploadDownloadNotAccepted = 0x70u,
+    transferDataSuspended = 0x71u,
+    generalProgrammingFailure = 0x72u,
+    wrongBlockSequenceCounter = 0x73u,
+    requestCorrectlyReceivedResponsePending = 0x78u,
+    subfunctionNotSupportedInActiveSession = 0x7Eu,
+    serviceNotSupportedInActiveSession = 0x7Fu,
+} uds_app_nrc_type_t;
+
+
+typedef enum {
+    SECURITY_LEVEL_0 = 0u, /* no need to unlocked */
+    SECURITY_LEVEL_1,
+    SECURITY_LEVEL_2,
+    SECURITY_LEVEL_3,
+} uds_app_security_level_t;
+
+
+typedef enum {
+    defaultSession = 0x01u,
+    programmingSession = 0x02u,
+    extendedDiagnosticSession = 0x04u,
+} uds_app_session_type_t;
+
+
 typedef struct {
-    uint8_t sid;
-    void (*sfunc)(void);
-} uds_ap_ser_t;
+    uds_app_sid_type_t sid;
+    uds_app_session_type_t spt_ses;
+    uds_app_security_level_t spt_sec;
+    void (*serv_rte)(uds_app_layer_t *papp, uds_tp_layer_t *ptp);
+} uds_app_service_t;
+
+
+typedef enum {
+    A_STS_IDLE = 0u,
+    A_STS_BUSY,
+    A_STS_ERROR,
+} uds_app_sts_t;
+
+
+typedef struct {
+    uds_app_session_type_t cur_ses;
+    uds_app_security_level_t cur_sec;
+    uds_app_sts_t sts;
+    uint8_t sec_try_cnt;
+    bool_t pos_rsp;
+} uds_app_layer_t;
+
+
+void uds_app_init(uds_app_layer_t *papp);
+void uds_app_process(uds_app_layer_t *papp, uds_tp_layer_t *ptp);
+
+/**
+ * @brief timer of uds
+ * 
+ */
 
 
 

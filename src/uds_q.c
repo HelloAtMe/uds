@@ -12,7 +12,15 @@
 
 #include "uds.h"
 
-/* get a elem from queue */
+
+/**
+ * @brief get a elem from queue
+ * 
+ * @param q 
+ * @param elem 
+ * @param sz 
+ * @return uds_q_rslt 
+ */
 uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem, uint16_t sz)
 {   
     if (q->qentries > 0) {
@@ -21,19 +29,31 @@ uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem, uint16_t sz)
         //     elem = (uint8_t *)elem + 1;
         //     q->qout = (uint8_t *)q->qout + 1;
         // }
-        memcpy((uint8_t *)q->qout, (uint8_t *)elem, sz);
+        memcpy((uint8_t *)elem, (uint8_t *)q->qout, sz);
+
         q->qout = (uint8_t *)q->qout + sz;
         q->qentries--;
+
         if (q->qout == q->qend) {
             q->qout = q->qstart;
         }
+        
         return UDS_Q_OK;
     }
 
     return UDS_Q_EMPTY;
 }
 
-/* put a elem in queue */
+
+
+/**
+ * @brief put a elem in queue
+ * 
+ * @param q 
+ * @param elem 
+ * @param sz 
+ * @return uds_q_rslt 
+ */
 uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz)
 {
     if (q->qentries < q->qsize) {
@@ -43,8 +63,10 @@ uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz)
         //     q->qin = (uint8_t *)q->qin + 1;
         // }
         memcpy((uint8_t *)q->qin, (uint8_t *)elem, sz);
+
         q->qin = (uint8_t *)q->qin + sz;
         q->qentries++;
+
         if (q->qin == q->qend) {
             q->qin = q->qstart;
         }
@@ -55,7 +77,14 @@ uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz)
     return UDS_Q_FULL;
 }
 
-/* clear a queue */
+
+
+/**
+ * @brief clear a queue
+ * 
+ * @param q 
+ * @return uds_q_rslt 
+ */
 uds_q_rslt uds_qflush(uds_q_t *q)
 {
     q->qin      = q->qstart;

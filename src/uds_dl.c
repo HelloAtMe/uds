@@ -20,7 +20,9 @@
  * @param pdl 
  */
 void uds_dl_init(uds_dl_layer_t *pdl)
-{
+{   
+    memset(&pdl, 0, sizeof(pdl));
+
     pdl->in_qf.qstart    = pdl->in_frs;
     pdl->in_qf.qend      = &pdl->in_frs[UDS_DL_IN_SZ];
     pdl->in_qf.qin       = pdl->in_frs;
