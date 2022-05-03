@@ -401,6 +401,11 @@ typedef struct {
 #define DISABLERX_ENABLETX              0x02u
 #define DISABLERX_DISABLETX             0x03u
 
+/* 0x3E */
+#define zeroSubFunction                 0x00u
+
+
+
 
 void uds_ap_init(uds_ap_layer_t *pap);
 void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);

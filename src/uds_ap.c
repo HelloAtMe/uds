@@ -640,7 +640,7 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
  */
 void uds_service_0x28(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 {
-    
+
 }
 
 /**
@@ -650,17 +650,35 @@ void uds_service_0x28(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
  * @param ptp 
  */
 void uds_service_0x3E(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
-{
-    if (pap->cur_ses != DEFAULT_SESSION) {
-        /* todo : restart the timer */
-    } 
+{   
+    bool_t pos_rsp_flag = false;
+    uds_ap_nrc_type_t nrc;
 
-    if (!(ptp->in.buf[1] & suppressPosRspMsgIndicationBit)) {
-        ptp->out.sts = N_STS_REDAY;
-        ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
-        ptp->out.buf[1] = ptp->in.buf[1] + ~(suppressPosRspMsgIndicationBit);
-        ptp->out.pci.dl = 2u;
-    } 
+    if (ptp->in.pci.dl == 2) {
+        if (ptp->in.buf[1] & ~(suppressPosRspMsgIndicationBit) == zeroSubFunction) {
+            if (pap->cur_ses != DEFAULT_SESSION) {
+                /* todo : restart the timer */
+
+            } 
+
+            if (!(ptp->in.buf[1] & suppressPosRspMsgIndicationBit)) {
+                ptp->out.sts = N_STS_REDAY;
+                ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
+                ptp->out.buf[1] = ptp->in.buf[1] + ~(suppressPosRspMsgIndicationBit);
+                ptp->out.pci.dl = 2u;
+
+                pos_rsp_flag = true;
+            } 
+        } else {
+            nrc = subfunctionNotSupported;
+        }
+    } else {
+        nrc = incorrectMessageLengthOrInvalidFormat;
+    }
+
+    if (!(pos_rsp_flag)) {
+        uds_service_response_negative(pap, ptp, nrc);
+    }
 }
 
 
