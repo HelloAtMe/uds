@@ -228,7 +228,7 @@ uds_tp_rslt_t uds_tp_process_to(uds_tp_layer_t *ptp);
 
 
 /**
- * @brief uds app layer, implementation of iso14229-1
+ * @brief uds ap layer, implementation of iso14229-1
  * 
  */
 typedef enum {
@@ -269,7 +269,7 @@ typedef enum {
     TransferData = 0x36u,
     RequestTransferExit = 0x37u,
     RequestFileTransfer = 0x38u,
-} uds_app_sid_type_t;
+} uds_ap_sid_type_t;
 
 
 typedef enum {
@@ -293,9 +293,9 @@ typedef enum {
     generalProgrammingFailure = 0x72u,
     wrongBlockSequenceCounter = 0x73u,
     requestCorrectlyReceivedResponsePending = 0x78u,
-    subfunctionNotSupportedInActiveSession = 0x7Eu,
+    // subfunctionNotSupportedInActiveSession = 0x7Eu,
     serviceNotSupportedInActiveSession = 0x7Fu,
-} uds_app_nrc_type_t;
+} uds_ap_nrc_type_t;
 
 
 typedef enum {
@@ -303,42 +303,107 @@ typedef enum {
     SECURITY_LEVEL_1,
     SECURITY_LEVEL_2,
     SECURITY_LEVEL_3,
-} uds_app_security_level_t;
+} uds_ap_security_level_t;
 
 
 typedef enum {
     defaultSession = 0x01u,
     programmingSession = 0x02u,
     extendedDiagnosticSession = 0x04u,
-} uds_app_session_type_t;
+} uds_ap_session_type_t;
 
 
 typedef struct {
-    uds_app_sid_type_t sid;
-    uds_app_session_type_t spt_ses;
-    uds_app_security_level_t spt_sec;
-    void (*serv_rte)(uds_app_layer_t *papp, uds_tp_layer_t *ptp);
-} uds_app_service_t;
+    uds_ap_sid_type_t sid;
+    uds_ap_session_type_t spt_ses;
+    uds_ap_security_level_t spt_sec;
+    void (*srv_rte)(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
+} uds_ap_service_t;
 
 
 typedef enum {
     A_STS_IDLE = 0u,
     A_STS_BUSY,
     A_STS_ERROR,
-} uds_app_sts_t;
+} uds_ap_sts_t;
 
 
 typedef struct {
-    uds_app_session_type_t cur_ses;
-    uds_app_security_level_t cur_sec;
-    uds_app_sts_t sts;
-    uint8_t sec_try_cnt;
-    bool_t pos_rsp;
-} uds_app_layer_t;
+    uint8_t seed[3];
+    uint8_t key[3];
+    uint8_t try_cnt;
+    bool_t  max_try;
+    union {   
+        struct {
+            uint8_t sd1_recv:1;        /* seed */
+            uint8_t sd2_recv:1;        /* seed */
+            uint8_t sd3_recv:1;        /* seed */
+            uint8_t :5;
+        } bit;
+        uint8_t all;
+    } sd_recv;
+    
+} uds_ap_sec_t;
 
 
-void uds_app_init(uds_app_layer_t *papp);
-void uds_app_process(uds_app_layer_t *papp, uds_tp_layer_t *ptp);
+typedef struct {
+    bool_t req;
+    bool_t nm_sts;
+    bool_t nr_sts;
+} uds_ap_cmm_t;
+
+
+typedef struct {
+    uds_ap_service_t       *cur_srv;
+    uds_ap_session_type_t   cur_ses;
+    uds_ap_security_level_t cur_sec;
+    // uint8_t                 sec_sts;    /* represent weather server is received coresponding level 1 2 3 seed
+    //                                         bit 1  2  3 */
+    // uint8_t                 seed[3];
+    // uint8_t                 key[3];
+    // bool_t                  sec_exctry;
+    // uint8_t                 sec_try_cnt;
+
+    uds_ap_sec_t            sec_ctrl;
+    uds_ap_cmm_t            cmm_ctrl;
+
+    uds_ap_sts_t            sts;
+    bool_t                  sup_pos_rsp;
+} uds_ap_layer_t;
+
+
+#define suppressPosRspMsgIndicationBit  0x80u
+#define exceedNumberofSecurity          10
+
+
+/* SUB-FUNCTION defines */
+/* 0X10 */
+#define DEFAULT_SESSION                 0x01u
+#define PROGRAMMING_SESSION             0x02u
+#define EXTENDDIAGNOSITIC_SESSION       0x03u
+
+/* 0x11 */
+#define HARD_RESET                      0x01u
+// #define KEYOFFON_RESET
+#define SOFT_RESET                      0x03u
+
+/* 0x27 */
+#define REQUEST_SEED1                   0x01u
+#define REQUEST_SEED2                   0x03u
+#define REQUEST_SEED3                   0x05u
+#define REQUEST_KEY1                    0x02u
+#define REQUEST_KEY2                    0x04u
+#define REQUEST_KEY3                    0x06u
+
+/* 0x28 */
+#define ENABLERX_ENABLETX               0x00u
+#define ENABLERX_DISABLETX              0x01u
+#define DISABLERX_ENABLETX              0x02u
+#define DISABLERX_DISABLETX             0x03u
+
+
+void uds_ap_init(uds_ap_layer_t *pap);
+void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 
 /**
  * @brief timer of uds

@@ -44,6 +44,7 @@ int main(void)
     b_t p = {{1,1}};
     b_t q;
     b_t *pq;
+    unsigned char aa = 0x82;
 
     printf("%d\n", pq);
     pq = (b_t *)((char *)pq + 10);
@@ -58,6 +59,18 @@ int main(void)
     //     printf("%d. [%d] [%d] [%d] \n", i, pk[0], pk[1], pk[2]);
     // }
     // printf("%d\n", sizeof(pk));
+
+    switch (aa)
+    {
+    case 1:
+        printf("switch : %d\n", 1);
     
+    case 2:
+        printf("switch : %d\n", 2);
+        break;
+    default:
+        printf("%d\n", (aa & ~0x80));
+        break;
+    }
     return 0;
 }

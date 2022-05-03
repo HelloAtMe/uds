@@ -90,13 +90,15 @@ void uds_tp_process_in(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
 uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
 {
     switch (ptp->out.sts) {
+        case N_STS_IDLE:
+            break;
         case N_STS_REDAY:
             if (ptp->out.pci.dl > 7) {
                 ptp->out.pci.pt = N_PCI_FF;
             } else {
                 ptp->out.pci.pt = N_PCI_SF;
             }
-            ptp->out.sts = N_STS_BUSY;
+            // ptp->out.sts = N_STS_BUSY;
         case N_STS_BUSY:
             switch (ptp->out.pci.pt) {
                 case N_PCI_SF:
@@ -116,16 +118,14 @@ uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
                     pdl->out.sts = L_STS_READY;
                     break;
                 default:
-                    ptp->out.sts = N_STS_ERROR;
+                    ptp->out.sts = N_STS_IDLE;
                     break;
             }
             break;
         case N_STS_BUSY_WAIT:
             break;
-        case N_STS_ERROR:
         default:
             ptp->out.sts = N_STS_IDLE;
-        case N_STS_IDLE:
             break;
     }
 }
@@ -151,7 +151,8 @@ uds_tp_rslt_t uds_tp_process_to(uds_tp_layer_t *ptp)
  */
 static void uds_tp_process_in_sf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
 {
-    if (ptp->out.sts == N_STS_IDLE) {
+    // if (ptp->out.sts == N_STS_IDLE) {
+    if (ptp->in.sts != N_STS_REDAY) {
         ptp->in.pci.dl = pfr->dt[0] & 0x0Fu;
         if (ptp->in.pci.dl > 7) {
             ptp->in.sts = N_STS_ERROR;
@@ -170,7 +171,8 @@ static void uds_tp_process_in_sf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
  */
 static void uds_tp_process_in_ff(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
 {
-    if (ptp->out.sts == N_STS_IDLE) {
+    // if (ptp->out.sts == N_STS_IDLE) {
+    if (ptp->in.sts != N_STS_REDAY) {
         ptp->in.cf_cnt  = 0;
         ptp->in.pci.dl = (uint16_t)(((pfr->dt[0] & 0xFu) << 8) + pfr->dt[1]);
         
@@ -208,7 +210,8 @@ static void uds_tp_process_in_cf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
 {   
     uint16_t sz;
     
-    if (ptp->out.sts == N_STS_IDLE && ptp->in.sts == N_STS_BUSY) {
+    // if (ptp->out.sts == N_STS_IDLE && ptp->in.sts == N_STS_BUSY) {
+    if (ptp->in.sts == N_STS_BUSY) {
         ptp->in.pci.sn = pfr->dt[0] & 0x0Fu;
         ptp->in.cf_cnt++;
         if ((ptp->in.cf_cnt % 0x10) == ptp->in.pci.sn) {
@@ -247,7 +250,7 @@ static void uds_tp_process_in_cf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
  */
 static void uds_tp_process_in_fc(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
 {   
-    if (ptp->in.sts == N_STS_IDLE && ptp->out.sts == N_STS_BUSY_WAIT) {
+    if (ptp->out.sts == N_STS_BUSY_WAIT) {
         ptp->in.pci.fs = pfr->dt[0] & 0x0Fu;
         switch (ptp->in.pci.fs) {
             case N_FS_CTS:
@@ -263,7 +266,7 @@ static void uds_tp_process_in_fc(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
                 break;
             case N_FS_OVFLW:
                 ptp->out.wf_cnt = 0;
-                ptp->out.sts = N_STS_ERROR;
+                ptp->out.sts = N_STS_IDLE;
                 break;
             case N_FS_WAIT:
                 if (ptp->out.wf_max > 0) {
@@ -272,14 +275,14 @@ static void uds_tp_process_in_fc(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
                         ptp->out.cfg.fs = ptp->in.pci.fs;
                         ptp->out.sts = N_STS_BUSY_WAIT;
                     } else {
-                        ptp->out.sts = N_STS_ERROR;
+                        ptp->out.sts = N_STS_IDLE;
                     }
                 } else {
-                    ptp->out.sts = N_STS_ERROR;
+                    ptp->out.sts = N_STS_IDLE;
                 }
                 break;
             default:
-                ptp->out.sts = N_STS_ERROR;
+                ptp->out.sts = N_STS_IDLE;
                 break;
         }
     }
