@@ -1,0 +1,13 @@
+#include "did.h"
+
+const uds_did_type_t uds_did_list[] = {
+    {0x1234, (uint8_t *)&helloworld0, 1},  // unsigned char
+    {0x1235, (uint8_t *)&helloworld1, 1},  // signed char
+    {0x1236, (uint8_t *)&helloworld2, 2},  // unsigned short
+    {0x1237, (uint8_t *)&helloworld3, 2},  // signed short
+    {0x1240, (uint8_t *)&helloworld4, 4},  // unsigned int
+    {0x1241, (uint8_t *)&helloworld5, 4},  // signed int
+    {0x1242, (uint8_t *)&helloworld6, 4},  // float32
+    {0x1243, (uint8_t *)helloworld7, 17},  // self defined vin
+};
+

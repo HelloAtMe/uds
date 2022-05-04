@@ -332,7 +332,7 @@ typedef struct {
     uint8_t seed[3];
     uint8_t key[3];
     uint8_t try_cnt;
-    bool_t  max_try;
+    bool_t  try_max;
     union {   
         struct {
             uint8_t sd1_recv:1;        /* seed */
@@ -341,16 +341,31 @@ typedef struct {
             uint8_t :5;
         } bit;
         uint8_t all;
-    } sd_recv;
+    } sds_recv;
     
 } uds_ap_sec_t;
 
 
 typedef struct {
-    bool_t req;
-    bool_t nm_sts;
-    bool_t nr_sts;
+    struct {
+        bool_t req;
+        bool_t tx;
+        bool_t rx;
+    } nor;
+    struct {
+        bool_t req;
+        bool_t tx;
+        bool_t rx;
+    } net;
 } uds_ap_cmm_t;
+
+
+/* used for 0x22 and 0x2e */
+typedef struct {
+    uint16_t    id;
+    void       *var;
+    uint8_t     sz;
+} uds_did_type_t;
 
 
 typedef struct {
@@ -364,8 +379,8 @@ typedef struct {
     // bool_t                  sec_exctry;
     // uint8_t                 sec_try_cnt;
 
-    uds_ap_sec_t            sec_ctrl;
-    uds_ap_cmm_t            cmm_ctrl;
+    uds_ap_sec_t            sec_ctrl;       /* 0x27 */
+    uds_ap_cmm_t            cmm_ctrl;       /* 0x28 */
 
     uds_ap_sts_t            sts;
     bool_t                  sup_pos_rsp;
@@ -404,7 +419,9 @@ typedef struct {
 /* 0x3E */
 #define zeroSubFunction                 0x00u
 
-
+/* 0x85 */
+#define DTC_ON                          0x01u
+#define DTC_OFF                         0x02u
 
 
 void uds_ap_init(uds_ap_layer_t *pap);
