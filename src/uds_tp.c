@@ -88,7 +88,9 @@ void uds_tp_process_in(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
  * @return uds_tp_rslt_t 
  */
 uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
-{
+{   
+    memset((uint8_t *)pdl->out.fr.dt, UDS_FILL_VALUE, UDS_DL_CAN_DL);
+
     switch (ptp->out.sts) {
         case N_STS_IDLE:
             break;

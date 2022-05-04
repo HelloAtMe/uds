@@ -21,12 +21,12 @@
  */
 void uds_dl_init(uds_dl_layer_t *pdl)
 {   
-    memset(&pdl, 0, sizeof(pdl));
+    memset((uint8_t *)pdl, 0, sizeof(pdl));
 
-    pdl->in_qf.qstart    = pdl->in_frs;
-    pdl->in_qf.qend      = &pdl->in_frs[UDS_DL_IN_SZ];
-    pdl->in_qf.qin       = pdl->in_frs;
-    pdl->in_qf.qout      = pdl->in_frs;
+    pdl->in_qf.qstart    = (can_std_frame_t *)&pdl->in_frs[0];
+    pdl->in_qf.qend      = (can_std_frame_t *)&pdl->in_frs[UDS_DL_IN_SZ];
+    pdl->in_qf.qin       = (can_std_frame_t *)&pdl->in_frs[0];
+    pdl->in_qf.qout      = (can_std_frame_t *)&pdl->in_frs[0];
     pdl->in_qf.qentries  = 0;
     pdl->in_qf.qsize     = UDS_DL_IN_SZ;
 

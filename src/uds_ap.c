@@ -110,7 +110,7 @@ const uds_ap_service_t uds_service_list[] = {
     {
         ReadDataByIdentifier,              
         (extendedDiagnosticSession), 
-        SECURITY_LEVEL_0, 
+        SECURITY_LEVEL_1, 
         uds_service_0x22
     },
     // {
@@ -140,7 +140,7 @@ const uds_ap_service_t uds_service_list[] = {
     {
         WriteDataByIdentifier,             
         (extendedDiagnosticSession), 
-        SECURITY_LEVEL_2, 
+        SECURITY_LEVEL_1, 
         uds_service_0x2E
     },
     // {
@@ -250,16 +250,18 @@ void uds_service_response_negative(uds_ap_layer_t *pap, uds_tp_layer_t *ptp, uds
  * @param sid 
  * @return uds_ap_service_t* if sid exist, return address of it. Or return NULL
  */
-uds_ap_service_t *uds_service_find(uds_ap_sid_type_t sid)
-{
+const uds_ap_service_t *uds_service_find(uds_ap_sid_type_t sid)
+{   
+    const uds_ap_service_t *uds_service = (uds_ap_service_t *)0;
     uint8_t i;
 
     for (i = 0; i < UDS_SERVICE_NUM; i++) {
         if (uds_service_list[i].sid == sid) {
-            return (&uds_service_list[i]);
+            uds_service = &uds_service_list[i];
+            break;
         }
     }
-    return ((uds_ap_service_t *)0);
+    return (uds_service);
 }
 
 
@@ -270,7 +272,12 @@ uds_ap_service_t *uds_service_find(uds_ap_sid_type_t sid)
  */
 void uds_ap_init(uds_ap_layer_t *pap)
 {
+    memset((uint8_t *)pap, 0, sizeof(uds_ap_layer_t));
 
+    pap->cur_ses = DEFAULT_SESSION;
+    pap->cur_sec = SECURITY_LEVEL_0;
+
+    pap->sup_pos_rsp = false;
 }
 
 
@@ -282,24 +289,24 @@ void uds_ap_init(uds_ap_layer_t *pap)
  */
 void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 {   
-    uds_ap_service_t *uds_service_ptr;
+    const uds_ap_service_t *uds_service_ptr;
     
     if (ptp->out.sts == N_STS_IDLE) {
         if (ptp->in.sts == N_STS_REDAY) {
 
             // find the sid in uds_service_list
-            pap->cur_srv = uds_service_find(ptp->in.buf[0]);
+            uds_service_ptr = uds_service_find(ptp->in.buf[0]);
             
             // check if sid in uds_service_list
-            if (pap->cur_srv != (uds_ap_service_t *)0) {
+            if (uds_service_ptr != (uds_ap_service_t *)0) {
                 // current session is satisfied for sid
-                if (pap->cur_srv->spt_ses & pap->cur_ses) {
+                if (uds_service_ptr->spt_ses & pap->cur_ses) {
                     // current security is satisfied for sid
-                    if (pap->cur_srv->spt_sec == pap->cur_sec) {
-                        /* do the routine */
-                        pap->cur_srv->srv_rte(pap, ptp);
-                    } else {
+                    if (uds_service_ptr->spt_sec > pap->cur_sec) {
                         uds_service_response_negative(pap, ptp, securityAccessDenied);
+                    } else {
+                        /* do the routine */
+                        uds_service_ptr->srv_rte(pap, ptp);
                     }
                 } else {
                     uds_service_response_negative(pap, ptp, serviceNotSupportedInActiveSession);
@@ -307,6 +314,9 @@ void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
             } else {
                 uds_service_response_negative(pap, ptp, serviceNotSupported);
             }
+
+            ptp->in.sts = N_STS_IDLE;
+
         } else if (ptp->in.sts == N_STS_ERROR) {
             ptp->in.sts = N_STS_IDLE;
         }
@@ -337,7 +347,7 @@ void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 
         switch (ptp->in.buf[1] & ~(suppressPosRspMsgIndicationBit)) {
             case DEFAULT_SESSION:
-                pap->cur_ses = DEFAULT_SESSION;
+                pap->cur_ses = defaultSession;
                 pos_rsp_flag = true;
                 pap->cur_sec = SECURITY_LEVEL_0;
                 pap->sec_ctrl.sds_recv.all = 0;
@@ -346,7 +356,7 @@ void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
             case PROGRAMMING_SESSION:
                 /* todo : check condition */
                 if (1) {
-                    pap->cur_ses = PROGRAMMING_SESSION;
+                    pap->cur_ses = programmingSession;
                     pos_rsp_flag = true;
                     pap->cur_sec = SECURITY_LEVEL_0;
                     pap->sec_ctrl.sds_recv.all = 0;
@@ -357,7 +367,7 @@ void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 
             case EXTENDDIAGNOSITIC_SESSION:
                 /* todo : start the timer */
-                pap->cur_ses = EXTENDDIAGNOSITIC_SESSION;
+                pap->cur_ses = extendedDiagnosticSession;
                 pos_rsp_flag = true;
                 pap->cur_sec = SECURITY_LEVEL_0;
                 pap->sec_ctrl.sds_recv.all = 0;
@@ -375,7 +385,7 @@ void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
         if (!(pap->sup_pos_rsp)) {
             ptp->out.sts = N_STS_REDAY;
             ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
-            ptp->out.buf[1] = ptp->in.buf[1] + ~(suppressPosRspMsgIndicationBit);
+            ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
             ptp->out.pci.dl = 2u;
         }
     } else {
@@ -435,7 +445,7 @@ void uds_service_0x11(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
         if (!(pap->sup_pos_rsp)) {
             ptp->out.sts = N_STS_REDAY;
             ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
-            ptp->out.buf[1] = ptp->in.buf[1] + ~(suppressPosRspMsgIndicationBit);
+            ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
             ptp->out.pci.dl = 2u;
         }
     } else {
@@ -547,9 +557,11 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
             if (ptp->in.pci.dl == 4) {
                 if (pap->sec_ctrl.sds_recv.bit.sd1_recv == 1) {
                     /* todo : caculate the key */
-
+                    pap->sec_ctrl.key[0] = 0x99;
+                    pap->sec_ctrl.key[1] = 0x11;
                     if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3]) {
                         ptp->out.pci.dl = 2u;
+                        pap->cur_sec = SECURITY_LEVEL_1;
                         pos_rsp_flag = true;
                     } else {
                         nrc = invalidKey;
@@ -570,9 +582,10 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
             if (ptp->in.pci.dl == 4) {
                 if (pap->sec_ctrl.sds_recv.bit.sd2_recv == 1) {
                     /* todo : caculate the key */
-
+                    
                     if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3]) {
                         ptp->out.pci.dl = 2u;
+                        pap->cur_sec = SECURITY_LEVEL_2;
                         pos_rsp_flag = true;
                     } else {
                         nrc = invalidKey;
@@ -596,6 +609,7 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 
                     if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3] && pap->sec_ctrl.key[2] == ptp->in.buf[4]) {
                         ptp->out.pci.dl = 2u;
+                        pap->cur_sec = SECURITY_LEVEL_3;
                         pos_rsp_flag = true;
                     } else {
                         nrc = invalidKey;
@@ -774,7 +788,7 @@ void uds_service_0x28(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
         if (!(pap->sup_pos_rsp)) {
             ptp->out.sts = N_STS_REDAY;
             ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
-            ptp->out.buf[1] = ptp->in.buf[1] + ~(suppressPosRspMsgIndicationBit);
+            ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
             ptp->out.pci.dl = 2u;
         }
     } else {
@@ -810,7 +824,7 @@ void uds_service_0x3E(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
             if (!(pap->sup_pos_rsp)) {
                 ptp->out.sts = N_STS_REDAY;
                 ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
-                ptp->out.buf[1] = ptp->in.buf[1] + ~(suppressPosRspMsgIndicationBit);
+                ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
                 ptp->out.pci.dl = 2u;
 
                 pos_rsp_flag = true;
@@ -890,7 +904,7 @@ void uds_service_0x85(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
         if (!(pap->sup_pos_rsp)) {
             ptp->out.sts = N_STS_REDAY;
             ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
-            ptp->out.buf[1] = ptp->in.buf[1] + ~(suppressPosRspMsgIndicationBit);
+            ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
             ptp->out.pci.dl = 2u;
         }
     } else {
@@ -921,7 +935,7 @@ void uds_service_0x22(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 {
     bool_t              pos_rsp_flag = false;
     bool_t              pos_too_long = false;
-    uds_did_type_t     *uds_did;
+    const uds_did_type_t     *uds_did;
     uds_ap_nrc_type_t   nrc;
     uint16_t            did;
     uint16_t            i;
@@ -973,7 +987,7 @@ void uds_service_0x22(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 
                     if (uds_did != (uds_did_type_t *)0) {
                         ptp->out.buf[ptp->out.buf_pos] = ptp->in.buf[ptp->in.buf_pos];
-                        ptp->out.buf[ptp->out.buf_pos] = ptp->in.buf[ptp->in.buf_pos + 1];
+                        ptp->out.buf[ptp->out.buf_pos + 1] = ptp->in.buf[ptp->in.buf_pos + 1];
                         memcpy(&ptp->out.buf[ptp->out.buf_pos + 2], (uint8_t *)uds_did->var, uds_did->sz);
                         ptp->out.buf_pos += (uds_did->sz + 2);
                     }
@@ -1036,10 +1050,11 @@ void uds_service_0x22(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
  * @param ptp 
  */
 void uds_service_0x2E(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
-{
+{   
+    const uds_did_type_t *uds_did;
+
     bool_t pos_rsp_flag = false;
     uds_ap_nrc_type_t nrc;
-    uds_did_type_t *uds_did;
     uint16_t did;
     uint8_t i;
 

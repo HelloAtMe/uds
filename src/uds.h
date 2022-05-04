@@ -24,6 +24,10 @@
 #define UDS_EXT extern
 #endif
 
+
+#define TEST_WIN32
+
+
 /* common data type defination */
 typedef unsigned int                uint32_t;
 typedef unsigned short              uint16_t;
@@ -313,14 +317,6 @@ typedef enum {
 } uds_ap_session_type_t;
 
 
-typedef struct {
-    uds_ap_sid_type_t sid;
-    uds_ap_session_type_t spt_ses;
-    uds_ap_security_level_t spt_sec;
-    void (*srv_rte)(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
-} uds_ap_service_t;
-
-
 typedef enum {
     A_STS_IDLE = 0u,
     A_STS_BUSY,
@@ -335,9 +331,9 @@ typedef struct {
     bool_t  try_max;
     union {   
         struct {
-            uint8_t sd1_recv:1;        /* seed */
-            uint8_t sd2_recv:1;        /* seed */
-            uint8_t sd3_recv:1;        /* seed */
+            uint8_t sd1_recv:1;        /* seed1 received */
+            uint8_t sd2_recv:1;        /* seed2 received */
+            uint8_t sd3_recv:1;        /* seed3 received */
             uint8_t :5;
         } bit;
         uint8_t all;
@@ -369,7 +365,6 @@ typedef struct {
 
 
 typedef struct {
-    uds_ap_service_t       *cur_srv;
     uds_ap_session_type_t   cur_ses;
     uds_ap_security_level_t cur_sec;
     // uint8_t                 sec_sts;    /* represent weather server is received coresponding level 1 2 3 seed
@@ -385,6 +380,15 @@ typedef struct {
     uds_ap_sts_t            sts;
     bool_t                  sup_pos_rsp;
 } uds_ap_layer_t;
+
+
+
+typedef struct {
+    uds_ap_sid_type_t sid;
+    uds_ap_session_type_t spt_ses;
+    uds_ap_security_level_t spt_sec;
+    void (*srv_rte)(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
+} uds_ap_service_t;
 
 
 #define suppressPosRspMsgIndicationBit  0x80u

@@ -25,7 +25,7 @@
 #define UDS_TP_PHYSICAL_ADDR        0x7E2u
 #define UDS_TP_TRANSPORT_ADDR       0x7EAu
 
-#define UDS_FILL_VALUE              0x55u
+#define UDS_FILL_VALUE              0xAAu
 
 /* data type for application layer */
 
