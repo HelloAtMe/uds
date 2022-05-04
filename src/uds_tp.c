@@ -57,6 +57,12 @@ void uds_tp_process_in(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
     if (pdl->in.sts == L_STS_READY) {
         ptp->in.pci.pt = (pdl->in.fr.dt[0] & 0xF0u) >> 4;
 
+        if (pdl->in.fr.id == UDS_TP_PHYSICAL_ADDR) {
+            ptp->in.pci.tt = N_TATYPE_PHYSICAL;
+        } else {
+            ptp->in.pci.tt = N_TATYPE_FUNCTIONAL;
+        }
+
         switch (ptp->in.pci.pt) {
             case N_PCI_CF:
                 uds_tp_process_in_cf(ptp, &pdl->in.fr);
@@ -89,6 +95,7 @@ void uds_tp_process_in(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
  */
 uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
 {   
+    /* fill the data link layer to fill the invalid byte with 0xAA */
     memset((uint8_t *)pdl->out.fr.dt, UDS_FILL_VALUE, UDS_DL_CAN_DL);
 
     switch (ptp->out.sts) {
@@ -243,6 +250,7 @@ static void uds_tp_process_in_cf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
         }
     }
 }
+
 
 /**
  * @brief 
