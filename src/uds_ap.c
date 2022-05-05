@@ -42,7 +42,12 @@ void uds_service_0x37(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 
 
 #include "uds_did.def"
+const uds_did_type_t uds_did_list[] = {
+    UDS_DID_LIST
+};
 #define UDS_DID_NUM     sizeof(uds_did_list) / sizeof(uds_did_type_t)
+
+
 
 const uds_ap_service_t uds_service_list[] = {
     {
