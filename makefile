@@ -1,5 +1,5 @@
 #==============================================================================
-#	Makefile for C in platform x86x64 Windows
+#	Makefile for C in platform x86_64 Windows
 #
 #	Created : wcy
 #   Version	: V1.1
