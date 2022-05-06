@@ -79,7 +79,7 @@ $(OBJECT_PATH)/%.o: %.s
 
 $(TARGET): $(OBJ_FILES)
 	@echo 'Linking files ...'
-	$(LD) -o $(TARGET_PATH)/$(TARGET) $(LDFLAGS) $(OBJ_FILES)
+	$(LD) -o $(TARGET_PATH)/$(TARGET).exe $(LDFLAGS) $(OBJ_FILES)
 
 .PHONY: rebuild	
 rebuild:

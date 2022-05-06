@@ -1,9 +1,6 @@
 {
     "files.associations": {
         "*.def": "c",
-        "uds.h": "c",
-        "stdio.h": "c",
-        "test.h": "c",
-        "string.h": "c"
+        ".h":"c"
     }
 }
