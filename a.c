@@ -11,6 +11,7 @@ typedef struct {
     char a[2];
 } b_t;
 
+
 void test_ptr(void *k, void *j) 
 {   
     void **b;

@@ -10,6 +10,10 @@
 ***********************************************************************/
 
 
+/* data type for data link layer */
+
+
+
 /* data type for transfer layer */
 #define UDS_TP_Ar                   25u
 #define UDS_TP_Cr                   150u
@@ -20,7 +24,6 @@
 #define UDS_TP_STmin                10u
 #define UDS_TP_BS                   0u
 
-
 #define UDS_TP_FUNCTION_ADDR        0x7DFu
 #define UDS_TP_PHYSICAL_ADDR        0x7E2u
 #define UDS_TP_TRANSPORT_ADDR       0x7EAu
@@ -28,6 +31,11 @@
 #define UDS_FILL_VALUE              0x55u
 
 /* data type for application layer */
+#define P2_SERVER                   
+#define P2X_SERVER                  
+
+#define S3_SERVER                   0x1000
+
 
 
 
