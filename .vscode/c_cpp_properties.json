@@ -12,6 +12,19 @@
                 "_UNICODE"
             ],
             "compilerPath": "D:\\usr\\bin\\gcc"
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/include/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "/usr/bin/gcc"
         }
     ],
     "version": 4

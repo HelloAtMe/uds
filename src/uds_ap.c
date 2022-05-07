@@ -40,13 +40,13 @@ void uds_service_0x36(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 void uds_service_0x37(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 // void uds_service_0x38(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 
-
+#include "did.h"
 #include "uds_did.def"
 const uds_did_type_t uds_did_list[] = {
     UDS_DID_LIST
 };
-#define UDS_DID_NUM     sizeof(uds_did_list) / sizeof(uds_did_type_t)
-
+/* it can't be calculate in this situation */
+// #define UDS_DID_NUM     sizeof(uds_did_list) / sizeof(uds_did_type_t)
 
 
 const uds_ap_service_t uds_service_list[] = {
@@ -820,7 +820,7 @@ void uds_service_0x3E(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
             pap->sup_pos_rsp = false;
         }
 
-        if (ptp->in.buf[1] & ~(suppressPosRspMsgIndicationBit) == zeroSubFunction) {
+        if ((ptp->in.buf[1] & ~(suppressPosRspMsgIndicationBit)) == zeroSubFunction) {
             if (pap->cur_ses != DEFAULT_SESSION) {
                 /* todo : restart the timer */
 

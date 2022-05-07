@@ -31,28 +31,33 @@ ifdef WIN32
 COMPILER_PATH = C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64
 CC = $(COMPILER_PATH)/bin/gcc.exe
 LD = $(COMPILER_PATH)/bin/gcc.exe
-GCC_INC_DIR = $(COMPILER_PATH)/include
+GCC_INC = $(COMPILER_PATH)/include
+TARGET_SUFFIX = .exe
 else 
 CC = /usr/bin/gcc
 LD = /usr/bin/gcc
-GCC_INC_DIR = /usr/bin/include
+GCC_INC = /usr/bin/include
+TARGET_SUFFIX = 
 endif
 
 
 #------------------------------ HEADER FILES  ------------------------------#
 PROJ_INC = -I./src \
 			-I./test \
-			-I$(GCC_INC_DIR)
+			-I$(GCC_INC)
 
 
 #------------------------------ COMPILE OPTIONS  ------------------------------#
-CFLAGS	= $(PROJ_INC) 				\
-		  -O0 						\
-		  -g 		
+CFLAGS	= $(PROJ_INC) \
+		  -O0 \
+		  -g \
+		  -std=gnu11
 
-ASFLAGS	= $(PROJ_INC) 				\
-		  -O0 						\
-		  -g 	
+
+ASFLAGS	= $(PROJ_INC) \
+		  -O0 \
+		  -g \
+		  -std=gnu11
 
 
 #------------------------------ LINK OPTIONS  ------------------------------#
@@ -82,16 +87,16 @@ $(OBJECT_PATH)/%.o: %.s
 
 $(TARGET): $(OBJ_FILES)
 	@echo 'Linking files ...'
-	$(LD) -o $(TARGET_PATH)/$(TARGET).exe $(LDFLAGS) $(OBJ_FILES)
+	$(LD) -o $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(LDFLAGS) $(OBJ_FILES)
 
-.PHONY: rebuild	
-rebuild:
-	$(MAKE) clean
-	$(MAKE) build
+.PHONY: all	
+all:
+	$(MAKE) c
+	$(MAKE) b
 
-build:
+b:
 	$(MAKE) $(TARGET)
 	@echo 'Finish to compile.'
 
-clean:
-	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET) $(TARGET_PATH)/$(TARGET).map
+c:
+	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(TARGET_PATH)/$(TARGET).map

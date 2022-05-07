@@ -5,45 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) 启动",
+            "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/out/main",
-            "args": [],
             "stopAtEntry": false,
+            // "customLaunchSetupCommands": [
+            //   { "text": "target-run", "description": "run target", "ignoreFailures": false }
+            // ],
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/Users/yun/Downloads/gdb-7.12.1/gdb/gdb",//修改gdb路径
-            "preLaunchTask": "build", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
-            "name": "(gdb) Launch",
-            "type": "cppdbg",
-            "request": "launch", // launch; attach
-            "program": "${workspaceFolder}/out/main.exe",//修改运行的exe名称
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/Users/yun/Downloads/gdb-7.12.1/gdb/gdb",//修改gdb路径
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        }
+            // "launchCompleteCommand": "None",
+            "linux": {
+              "MIMode": "gdb",
+              "miDebuggerPath": "/usr/bin/gdb"
+            },
+            "osx": {
+              "MIMode": "lldb"
+            },
+            "windows": {
+              "MIMode": "gdb",
+              "miDebuggerPath": "C:\\MinGw\\bin\\gdb.exe"
+            }
+          }
     ]
-}
