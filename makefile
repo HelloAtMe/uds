@@ -56,8 +56,11 @@ ASFLAGS	= $(PROJ_INC) 				\
 
 
 #------------------------------ LINK OPTIONS  ------------------------------#
-LDFLAGS = -Wl,-Map=$(TARGET_PATH)/$(TARGET).map
-
+ifdef (WIN32)
+LDFLAGS = -Wl,-Map, $(TARGET_PATH)/$(TARGET).map
+else
+LDFLAGS = 
+endif
 
 #------------------------------ SOUREC FILES  ------------------------------#
 vpath %.c  $(SOURCE_DIR)
@@ -91,4 +94,4 @@ build:
 	@echo 'Finish to compile.'
 
 clean:
-	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET).exe $(TARGET_PATH)/$(TARGET).map
+	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET) $(TARGET_PATH)/$(TARGET).map
