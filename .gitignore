@@ -57,6 +57,8 @@ a
 out/
 obj/
 
+.vscode/c_cpp_properties.json
+
 GPATH
 GRTAGS
 GTAGS

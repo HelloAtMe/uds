@@ -8,8 +8,9 @@
             "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch",
+            "externalConsole": false,
             "program": "${workspaceFolder}/out/main",
-            "stopAtEntry": false,
+            "stopAtEntry": true,
             // "customLaunchSetupCommands": [
             //   { "text": "target-run", "description": "run target", "ignoreFailures": false }
             // ],
@@ -20,11 +21,12 @@
               "miDebuggerPath": "/usr/bin/gdb"
             },
             "osx": {
-              "MIMode": "lldb"
+              "MIMode": "lldb",
+              "miDebuggerPath": "/Users/yun/.vscode/extensions/ms-vscode.cpptools-1.9.8-darwin-x64/debugAdapters/lldb/bin/lldb-mi"
             },
             "windows": {
               "MIMode": "gdb",
               "miDebuggerPath": "C:\\MinGw\\bin\\gdb.exe"
             }
-          }
+        }
     ]
