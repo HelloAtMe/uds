@@ -1,5 +1,5 @@
 
-
+// \ cant followed by empty
 
 #define UDS_DID_LIST \
     {0x1234, (uint8_t *)&helloworld0, 1}, \
@@ -9,6 +9,7 @@
     {0x1240, (uint8_t *)&helloworld4, 4}, \
     {0x1241, (uint8_t *)&helloworld5, 4}, \
     {0x1242, (uint8_t *)&helloworld6, 4}, \
-    {0x1243, (uint8_t *)helloworld7, 17},               
+    {0x1243, (uint8_t *)helloworld7, 17}, \
 
 
+#define UDS_DID_NUM 9

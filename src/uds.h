@@ -246,8 +246,8 @@ typedef struct {
 
 void uds_tp_init(uds_tp_layer_t *ptp);
 void uds_tp_process_in(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
-uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
-uds_tp_rslt_t uds_tp_process_to(uds_tp_layer_t *ptp);
+void uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl);
+void uds_tp_process_to(uds_tp_layer_t *ptp);
 
 
 

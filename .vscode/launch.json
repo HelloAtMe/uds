@@ -5,8 +5,9 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "C++ Launch",
             "type": "cppdbg",
+<<<<<<< HEAD
             "request": "launch", // launch; attach
             "program": "${workspaceFolder}/out/main.exe",//修改运行的exe名称
             "args": [],
@@ -35,6 +36,28 @@
                 }
                 
             ],
+=======
+            "request": "launch",
+            "externalConsole": false,
+            "program": "${workspaceFolder}/out/main",
+            "stopAtEntry": true,
+            // "customLaunchSetupCommands": [
+            //   { "text": "target-run", "description": "run target", "ignoreFailures": false }
+            // ],
+            "cwd": "${workspaceFolder}",
+            // "launchCompleteCommand": "None",
+            "linux": {
+              "MIMode": "gdb",
+              "miDebuggerPath": "/usr/bin/gdb"
+            },
+            "osx": {
+              "MIMode": "lldb",
+              "miDebuggerPath": "/Users/yun/.vscode/extensions/ms-vscode.cpptools-1.9.8-darwin-x64/debugAdapters/lldb/bin/lldb-mi"
+            },
+            "windows": {
+              "MIMode": "gdb",
+              "miDebuggerPath": "C:\\MinGw\\bin\\gdb.exe"
+            }
+>>>>>>> f801c2bdbcf68019ef98bae15f292dc5454a333e
         }
     ]
-}

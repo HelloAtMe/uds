@@ -93,7 +93,7 @@ void uds_tp_process_in(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
  * @param pdl 
  * @return uds_tp_rslt_t 
  */
-uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
+void uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
 {   
     /* fill the data link layer to fill the invalid byte with 0xAA */
     memset((uint8_t *)pdl->out.fr.dt, UDS_FILL_VALUE, UDS_DL_CAN_DL);
@@ -146,7 +146,7 @@ uds_tp_rslt_t uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
  * @param ptp 
  * @return uds_tp_rslt_t 
  */
-uds_tp_rslt_t uds_tp_process_to(uds_tp_layer_t *ptp)
+void uds_tp_process_to(uds_tp_layer_t *ptp)
 {
 
 }

@@ -31,33 +31,41 @@ ifdef WIN32
 COMPILER_PATH = C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64
 CC = $(COMPILER_PATH)/bin/gcc.exe
 LD = $(COMPILER_PATH)/bin/gcc.exe
-GCC_INC_DIR = $(COMPILER_PATH)/include
+GCC_INC = $(COMPILER_PATH)/include
+TARGET_SUFFIX = .exe
 else 
 CC = /usr/bin/gcc
 LD = /usr/bin/gcc
-GCC_INC_DIR = /usr/bin/include
+GCC_INC = /usr/bin/include
+TARGET_SUFFIX = 
 endif
 
 
 #------------------------------ HEADER FILES  ------------------------------#
 PROJ_INC = -I./src \
 			-I./test \
-			-I$(GCC_INC_DIR)
+			-I$(GCC_INC)
 
 
 #------------------------------ COMPILE OPTIONS  ------------------------------#
-CFLAGS	= $(PROJ_INC) 				\
-		  -O0 						\
-		  -g 		
+CFLAGS	= $(PROJ_INC) \
+		  -O0 \
+		  -g \
+		  -std=gnu11
 
-ASFLAGS	= $(PROJ_INC) 				\
-		  -O0 						\
-		  -g 	
+
+ASFLAGS	= $(PROJ_INC) \
+		  -O0 \
+		  -g \
+		  -std=gnu11
 
 
 #------------------------------ LINK OPTIONS  ------------------------------#
-LDFLAGS = -Wl,-Map=$(TARGET_PATH)/$(TARGET).map
-
+ifdef (WIN32)
+LDFLAGS = -Wl,-Map, $(TARGET_PATH)/$(TARGET).map
+else
+LDFLAGS = 
+endif
 
 #------------------------------ SOUREC FILES  ------------------------------#
 vpath %.c  $(SOURCE_DIR)
@@ -79,7 +87,7 @@ $(OBJECT_PATH)/%.o: %.s
 
 $(TARGET): $(OBJ_FILES)
 	@echo 'Linking files ...'
-	$(LD) -o $(TARGET_PATH)/$(TARGET).exe $(LDFLAGS) $(OBJ_FILES)
+	$(LD) -o $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(LDFLAGS) $(OBJ_FILES)
 
 .PHONY: all	
 all:
@@ -91,4 +99,8 @@ b:
 	@echo 'Finish to compile.'
 
 c:
+<<<<<<< HEAD
 	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET).exe $(TARGET_PATH)/$(TARGET).map
+=======
+	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(TARGET_PATH)/$(TARGET).map
+>>>>>>> f801c2bdbcf68019ef98bae15f292dc5454a333e
