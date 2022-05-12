@@ -10,7 +10,7 @@
             "request": "launch",
             "externalConsole": false,
             "program": "${workspaceFolder}/out/main",
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             // "customLaunchSetupCommands": [
             //   { "text": "target-run", "description": "run target", "ignoreFailures": false }
             // ],
@@ -21,7 +21,12 @@
               "miDebuggerPath": "/usr/bin/gdb"
             },
             "osx": {
-              "MIMode": "lldb",
+                "targetArchitecture": "x64",
+              "symbolLoadInfo": {
+                  "loadAll": true,
+                  "exceptionList": ""
+              },
+                "MIMode": "lldb",
               "miDebuggerPath": "/Users/yun/.vscode/extensions/ms-vscode.cpptools-1.9.8-darwin-x64/debugAdapters/lldb/bin/lldb-mi"
             },
             "windows": {
