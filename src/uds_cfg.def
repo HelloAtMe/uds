@@ -31,10 +31,10 @@
 #define UDS_FILL_VALUE              0x55u
 
 /* data type for application layer */
-#define P2_SERVER                   
-#define P2X_SERVER                  
+#define P2_SERVER_MAX               0x50u    
+#define P2X_SERVER_MAX              0x5000u
 
-#define S3_SERVER                   0x1000
+#define S3_SERVER_MAX               0x1000u
 
 
 

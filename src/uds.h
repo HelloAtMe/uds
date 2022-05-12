@@ -73,6 +73,26 @@ uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz);
 uds_q_rslt uds_qflush(uds_q_t *q);
 
 
+/**
+ * @brief timer of uds
+ * 
+ */
+typedef void (*uds_func_t)(void *ptmr, void *parg);
+
+typedef struct {
+    bool_t st;
+    uint32_t val;
+    uint32_t cnt;
+    uds_func_t act;
+} uds_timer_t;
+
+
+
+void uds_timer_init(uds_timer_t *ptimer, void *parg);
+void uds_timer_start(uds_timer_t *ptimer);
+void uds_timer_stop(uds_timer_t *ptimer);
+
+
 
 /** data link layer 
  *  only support the classic can and standard id
@@ -210,8 +230,8 @@ typedef struct {
     uds_tp_fc_cfg_t         cfg;        
     uds_tp_stream_sts_t     sts;
     uint16_t                cf_cnt;     /* sequence number count */
-    uint16_t                wf_max;
-    uint16_t                wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain fc */
+    uint16_t                wf_max;     /* fs type is wait, and the max received time, if beyond this conut give up to send the remain cf */
+    uint16_t                wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain cf */
     // uint16_t        buf_sz; remove it, because the pci.dl can represent this param
     uint16_t                buf_pos;
     uint8_t                 buf[UDS_TP_BUF_SZ];
@@ -382,12 +402,13 @@ typedef struct {
 } uds_ap_layer_t;
 
 
+typedef void (*uds_ap_fun_t)(void *, void *);
 
 typedef struct {
     uds_ap_sid_type_t sid;
     uds_ap_session_type_t spt_ses;
     uds_ap_security_level_t spt_sec;
-    void (*srv_rte)(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
+    uds_ap_fun_t srv_rte;
 } uds_ap_service_t;
 
 
@@ -430,12 +451,6 @@ typedef struct {
 
 void uds_ap_init(uds_ap_layer_t *pap);
 void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
-
-/**
- * @brief timer of uds
- * 
- */
-
 
 
 /**
