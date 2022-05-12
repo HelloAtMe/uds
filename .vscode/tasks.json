@@ -2,10 +2,21 @@
     "tasks": [
         {
             "type": "shell",
+<<<<<<< HEAD
+            "label": "b",
+            "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
+            "args": [
+                "WIN32=1",
+                "b"
+            ],
+            "problemMatcher": [
+                "$gcc"
+=======
             "label": "build",
             "command": "/usr/bin/make",
             "args": [
                 "b"
+>>>>>>> f801c2bdbcf68019ef98bae15f292dc5454a333e
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -18,9 +29,16 @@
         },
         {
             "type": "shell",
+<<<<<<< HEAD
+            "label": "c",
+            "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
+            "args": [
+                "WIN32=1",
+=======
             "label": "clean",
             "command": "/usr/bin/make",
             "args": [
+>>>>>>> f801c2bdbcf68019ef98bae15f292dc5454a333e
                 "c"
             ],
             "problemMatcher": [

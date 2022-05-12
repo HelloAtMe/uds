@@ -48,7 +48,6 @@ const uds_did_type_t uds_did_list[] = {
 /* it can't be calculate in this situation */
 // #define UDS_DID_NUM     sizeof(uds_did_list) / sizeof(uds_did_type_t)
 
-
 const uds_ap_service_t uds_service_list[] = {
     {
         DiagnosticSessionControl,          
@@ -314,9 +313,11 @@ void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
                         uds_service_ptr->srv_rte(pap, ptp);
                     }
                 } else {
+                    // current session is not supported in service
                     uds_service_response_negative(pap, ptp, serviceNotSupportedInActiveSession);
                 }
             } else {
+                // there is no service 
                 uds_service_response_negative(pap, ptp, serviceNotSupported);
             }
 
@@ -649,7 +650,7 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 
 /**
  * @brief 
- *  parameter 0x01 normalCommunicationMessages 
+ *  parameter   0x01 normalCommunicationMessages 
  *              0x02 networkManagementCommunicationMessages
  *              0x03 networkManagementCommunicationMessages and normalCommunicationMessages
  * @param pap 
