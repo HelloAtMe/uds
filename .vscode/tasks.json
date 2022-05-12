@@ -2,11 +2,11 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "build",
+            "label": "b",
             "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
             "args": [
                 "WIN32=1",
-                "build"
+                "b"
             ],
             "problemMatcher": [
                 "$gcc"
@@ -22,11 +22,11 @@
         },
         {
             "type": "shell",
-            "label": "clean",
+            "label": "c",
             "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
             "args": [
                 "WIN32=1",
-                "clean"
+                "c"
             ],
             "problemMatcher": [
                 "$gcc"
@@ -36,7 +36,7 @@
             },
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
             "detail": "调试器生成的任务。"
         }

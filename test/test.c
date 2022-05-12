@@ -38,8 +38,8 @@ int main(void)
 
     c = sizeof(fr) / sizeof(can_std_frame_t);
 
-    // while (i < c || uds_tp.out.sts == N_STS_BUSY) {
-    while (1) {
+    while (i < 0x100) {
+        
         if (i < c) {
             uds_recv_frame(&uds_dl.in_qf, fr[i]);
         } 

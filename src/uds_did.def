@@ -5,7 +5,7 @@
     {0x1234, (uint8_t *)&helloworld0, 1}, \
     {0x1235, (uint8_t *)&helloworld1, 1}, \
     {0x1236, (uint8_t *)&helloworld2, 2}, \
-    {0x1237, (uint8_t *)&helloworld3, 2}, \  
+    {0x1237, (uint8_t *)&helloworld3, 2}, \
     {0x1240, (uint8_t *)&helloworld4, 4}, \
     {0x1241, (uint8_t *)&helloworld5, 4}, \
     {0x1242, (uint8_t *)&helloworld6, 4}, \

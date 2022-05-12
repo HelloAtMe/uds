@@ -81,14 +81,14 @@ $(TARGET): $(OBJ_FILES)
 	@echo 'Linking files ...'
 	$(LD) -o $(TARGET_PATH)/$(TARGET).exe $(LDFLAGS) $(OBJ_FILES)
 
-.PHONY: rebuild	
-rebuild:
-	$(MAKE) clean
-	$(MAKE) build
+.PHONY: all	
+all:
+	$(MAKE) c
+	$(MAKE) b
 
-build:
+b:
 	$(MAKE) $(TARGET)
 	@echo 'Finish to compile.'
 
-clean:
+c:
 	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET).exe $(TARGET_PATH)/$(TARGET).map
