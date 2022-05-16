@@ -13,6 +13,11 @@
 #include "uds.h"
 
 
+
+static void uds_ap_process_s3_to(uds_ap_layer_t *pap);
+static void uds_ap_process_sdelay_to(uds_ap_layer_t *pap);
+
+
 void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 void uds_service_0x11(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
@@ -40,13 +45,17 @@ void uds_service_0x36(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 void uds_service_0x37(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 // void uds_service_0x38(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 
+
+
 #include "did.h"
 #include "uds_did.def"
-const uds_did_type_t uds_did_list[] = {
+const uds_did_type_t uds_did_list[UDS_DID_NUM] = {
     UDS_DID_LIST
 };
-/* it can't be calculate in this situation */
+/* clang compiler can't be calculate in this situation */
 // #define UDS_DID_NUM     sizeof(uds_did_list) / sizeof(uds_did_type_t)
+
+
 
 const uds_ap_service_t uds_service_list[] = {
     {
@@ -217,8 +226,6 @@ const uds_ap_service_t uds_service_list[] = {
     // },
 };
 
-
-
 #define UDS_SERVICE_NUM (sizeof(uds_service_list) / sizeof(uds_ap_service_t))
 
 
@@ -278,10 +285,26 @@ void uds_ap_init(uds_ap_layer_t *pap)
 {
     memset((uint8_t *)pap, 0, sizeof(uds_ap_layer_t));
 
-    pap->cur_ses = DEFAULT_SESSION;
+    pap->cur_ses = defaultSession;
     pap->cur_sec = SECURITY_LEVEL_0;
 
     pap->sup_pos_rsp = false;
+
+    pap->ptmr_s3 = &uds_timer[2];
+    pap->ptmr_s3->st  = false;
+    pap->ptmr_s3->cnt = S3_SERVER_MAX;
+    pap->ptmr_s3->val = S3_SERVER_MAX;
+    pap->ptmr_s3->act = uds_ap_process_s3_to;
+    pap->ptmr_s3->parg = pap;
+
+
+    pap->ptmr_sdelay = &uds_timer[3];
+    pap->ptmr_sdelay->st  = false;
+    pap->ptmr_sdelay->cnt = SECURITY_DELAY_TIME;
+    pap->ptmr_sdelay->val = SECURITY_DELAY_TIME;
+    pap->ptmr_sdelay->act = uds_ap_process_sdelay_to;
+    pap->ptmr_sdelay->parg = pap;
+
 }
 
 
@@ -330,6 +353,29 @@ void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
 }
 
 
+/**
+ * @brief 
+ * 
+ * @param pap 
+ */
+static void uds_ap_process_s3_to(uds_ap_layer_t *pap)
+{
+    pap->cur_ses = defaultSession;
+    pap->cur_sec = SECURITY_LEVEL_0;
+    pap->sec_ctrl.sds_recv.all = 0;
+}
+
+
+/**
+ * @brief 
+ * 
+ * @param pap 
+ */
+static void uds_ap_process_sdelay_to(uds_ap_layer_t *pap)
+{
+    pap->sec_ctrl.enable = true;
+}
+
 
 /**
  * @brief 
@@ -372,7 +418,6 @@ void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
                 break;
 
             case EXTENDDIAGNOSITIC_SESSION:
-                /* todo : start the timer */
                 pap->cur_ses = extendedDiagnosticSession;
                 pos_rsp_flag = true;
                 pap->cur_sec = SECURITY_LEVEL_0;
@@ -394,10 +439,16 @@ void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
             ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
             ptp->out.pci.dl = 2u;
         }
+
+        if (pap->cur_ses != defaultSession) {
+            pap->ptmr_s3->st = true;
+            pap->ptmr_s3->cnt = pap->ptmr_s3->val;
+        } else {
+            pap->ptmr_s3->st = false;
+        }
     } else {
         uds_service_response_negative(pap, ptp, nrc);
     }
-         
 }
 
 
@@ -476,165 +527,171 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
     /* suppressPosRspMsgIndicationBit must be 0 */
     pap->sup_pos_rsp = false;
 
-    switch (ptp->in.buf[1]) {
-        case REQUEST_SEED1:
-            if (ptp->in.pci.dl == 2) {
-                if (!pap->sec_ctrl.try_max) {
-                    if (pap->cur_sec != SECURITY_LEVEL_1) {
-                        pap->sec_ctrl.sds_recv.bit.sd1_recv = 0x1u;
-                        pap->sec_ctrl.seed[0] = 0x12u;
-                        pap->sec_ctrl.seed[1] = 0x34u;
+    if (pap->sec_ctrl.enable == true) {
 
-                    } else {
-                        pap->sec_ctrl.seed[0] = 0x00u;
-                        pap->sec_ctrl.seed[1] = 0x00u;
+        switch (ptp->in.buf[1]) {
+            case REQUEST_SEED1:
+                if (ptp->in.pci.dl == 2) {
+                    if (!pap->sec_ctrl.try_max) {
+                        if (pap->cur_sec != SECURITY_LEVEL_1) {
+                            pap->sec_ctrl.sds_recv.bit.sd1_recv = 0x1u;
+                            pap->sec_ctrl.seed[0] = 0x12u;
+                            pap->sec_ctrl.seed[1] = 0x34u;
 
-                    }
-                    ptp->out.buf[2] = pap->sec_ctrl.seed[0];
-                    ptp->out.buf[3] = pap->sec_ctrl.seed[1];
-                    ptp->out.pci.dl = 4u;
+                        } else {
+                            pap->sec_ctrl.seed[0] = 0x00u;
+                            pap->sec_ctrl.seed[1] = 0x00u;
 
-                    pos_rsp_flag = true;
-                } else {
-                    nrc = exceedNumberOfAttempts;
-                }
-                
-            } else {
-                nrc = incorrectMessageLengthOrInvalidFormat;
-            }
-            break;
+                        }
+                        ptp->out.buf[2] = pap->sec_ctrl.seed[0];
+                        ptp->out.buf[3] = pap->sec_ctrl.seed[1];
+                        ptp->out.pci.dl = 4u;
 
-        case REQUEST_SEED2:
-            if (ptp->in.pci.dl == 2) {
-                if (!pap->sec_ctrl.try_max) {
-                    if (pap->cur_sec != SECURITY_LEVEL_2) {
-                        pap->sec_ctrl.sds_recv.bit.sd2_recv = 0x1u;
-                        pap->sec_ctrl.seed[0] = 0x12u;
-                        pap->sec_ctrl.seed[1] = 0x34u;
-
-                    } else {
-                        pap->sec_ctrl.seed[0] = 0x00u;
-                        pap->sec_ctrl.seed[1] = 0x00u;
-                        
-                    }
-                    ptp->out.buf[2] = pap->sec_ctrl.seed[0];
-                    ptp->out.buf[3] = pap->sec_ctrl.seed[1];
-                    ptp->out.pci.dl = 4u;
-
-                    pos_rsp_flag = true;
-                } else {
-                    nrc = exceedNumberOfAttempts;
-                }
-            } else {
-                nrc = incorrectMessageLengthOrInvalidFormat;
-            }
-            break;
-
-        case REQUEST_SEED3:
-            if (ptp->in.pci.dl == 2) {
-                if (!pap->sec_ctrl.try_max) {
-                    if (pap->cur_sec != SECURITY_LEVEL_3) {
-                        pap->sec_ctrl.sds_recv.bit.sd3_recv = 0x1u;
-                        pap->sec_ctrl.seed[0] = 0x12u;
-                        pap->sec_ctrl.seed[1] = 0x34u;
-                        pap->sec_ctrl.seed[2] = 0x56u;
-
-                    } else {
-                        pap->sec_ctrl.seed[0] = 0x00u;
-                        pap->sec_ctrl.seed[1] = 0x00u;
-                        pap->sec_ctrl.seed[2] = 0x00u;
-                        
-                    }
-                    ptp->out.buf[2] = pap->sec_ctrl.seed[0];
-                    ptp->out.buf[3] = pap->sec_ctrl.seed[1];
-                    ptp->out.buf[4] = pap->sec_ctrl.seed[2];
-                    ptp->out.pci.dl = 5u;
-
-                    pos_rsp_flag = true;
-                } else {
-                    nrc = exceedNumberOfAttempts;
-                }
-            } else {
-                nrc = incorrectMessageLengthOrInvalidFormat;
-            }
-            break;
-
-        case REQUEST_KEY1:
-            if (ptp->in.pci.dl == 4) {
-                if (pap->sec_ctrl.sds_recv.bit.sd1_recv == 1) {
-                    /* todo : caculate the key */
-                    pap->sec_ctrl.key[0] = 0x99;
-                    pap->sec_ctrl.key[1] = 0x11;
-                    if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3]) {
-                        ptp->out.pci.dl = 2u;
-                        pap->cur_sec = SECURITY_LEVEL_1;
                         pos_rsp_flag = true;
                     } else {
-                        nrc = invalidKey;
-                        if (++pap->sec_ctrl.try_cnt > exceedNumberofSecurity) {
-                            pap->sec_ctrl.try_max = true;
-                        }
+                        nrc = exceedNumberOfAttempts;
                     }
-                    pap->sec_ctrl.sds_recv.all = 0;
-                } else {
-                    nrc = requestSequenceError;
-                }
-            } else {
-                nrc = incorrectMessageLengthOrInvalidFormat;
-            }
-            break;
-
-        case REQUEST_KEY2:
-            if (ptp->in.pci.dl == 4) {
-                if (pap->sec_ctrl.sds_recv.bit.sd2_recv == 1) {
-                    /* todo : caculate the key */
                     
-                    if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3]) {
-                        ptp->out.pci.dl = 2u;
-                        pap->cur_sec = SECURITY_LEVEL_2;
+                } else {
+                    nrc = incorrectMessageLengthOrInvalidFormat;
+                }
+                break;
+
+            case REQUEST_SEED2:
+                if (ptp->in.pci.dl == 2) {
+                    if (!pap->sec_ctrl.try_max) {
+                        if (pap->cur_sec != SECURITY_LEVEL_2) {
+                            pap->sec_ctrl.sds_recv.bit.sd2_recv = 0x1u;
+                            pap->sec_ctrl.seed[0] = 0x12u;
+                            pap->sec_ctrl.seed[1] = 0x34u;
+
+                        } else {
+                            pap->sec_ctrl.seed[0] = 0x00u;
+                            pap->sec_ctrl.seed[1] = 0x00u;
+                            
+                        }
+                        ptp->out.buf[2] = pap->sec_ctrl.seed[0];
+                        ptp->out.buf[3] = pap->sec_ctrl.seed[1];
+                        ptp->out.pci.dl = 4u;
+
                         pos_rsp_flag = true;
                     } else {
-                        nrc = invalidKey;
-                        if (++pap->sec_ctrl.try_cnt > exceedNumberofSecurity) {
-                            pap->sec_ctrl.try_max = true;
-                        }
+                        nrc = exceedNumberOfAttempts;
                     }
-                    pap->sec_ctrl.sds_recv.all = 0;
                 } else {
-                    nrc = requestSequenceError;
+                    nrc = incorrectMessageLengthOrInvalidFormat;
                 }
-            } else {
-                nrc = incorrectMessageLengthOrInvalidFormat;
-            }
-            break;
+                break;
 
-        case REQUEST_KEY3:
-            if (ptp->in.pci.dl == 5) {
-                if (pap->sec_ctrl.sds_recv.bit.sd3_recv == 1) {
-                    /* todo : caculate the key */
+            case REQUEST_SEED3:
+                if (ptp->in.pci.dl == 2) {
+                    if (!pap->sec_ctrl.try_max) {
+                        if (pap->cur_sec != SECURITY_LEVEL_3) {
+                            pap->sec_ctrl.sds_recv.bit.sd3_recv = 0x1u;
+                            pap->sec_ctrl.seed[0] = 0x12u;
+                            pap->sec_ctrl.seed[1] = 0x34u;
+                            pap->sec_ctrl.seed[2] = 0x56u;
 
-                    if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3] && pap->sec_ctrl.key[2] == ptp->in.buf[4]) {
-                        ptp->out.pci.dl = 2u;
-                        pap->cur_sec = SECURITY_LEVEL_3;
+                        } else {
+                            pap->sec_ctrl.seed[0] = 0x00u;
+                            pap->sec_ctrl.seed[1] = 0x00u;
+                            pap->sec_ctrl.seed[2] = 0x00u;
+                            
+                        }
+                        ptp->out.buf[2] = pap->sec_ctrl.seed[0];
+                        ptp->out.buf[3] = pap->sec_ctrl.seed[1];
+                        ptp->out.buf[4] = pap->sec_ctrl.seed[2];
+                        ptp->out.pci.dl = 5u;
+
                         pos_rsp_flag = true;
                     } else {
-                        nrc = invalidKey;
-                        if (++pap->sec_ctrl.try_cnt > exceedNumberofSecurity) {
-                            pap->sec_ctrl.try_max = true;
-                        }
+                        nrc = exceedNumberOfAttempts;
                     }
-                    pap->sec_ctrl.sds_recv.all = 0;
                 } else {
-                    nrc = requestSequenceError;
+                    nrc = incorrectMessageLengthOrInvalidFormat;
                 }
-            } else {
-                nrc = incorrectMessageLengthOrInvalidFormat;
-            }
-            break;
+                break;
 
-        default:
-            nrc = subfunctionNotSupported;
-            break;
+            case REQUEST_KEY1:
+                if (ptp->in.pci.dl == 4) {
+                    if (pap->sec_ctrl.sds_recv.bit.sd1_recv == 1) {
+                        /* todo : caculate the key */
+                        pap->sec_ctrl.key[0] = 0x99;
+                        pap->sec_ctrl.key[1] = 0x11;
+                        if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3]) {
+                            ptp->out.pci.dl = 2u;
+                            pap->cur_sec = SECURITY_LEVEL_1;
+                            pos_rsp_flag = true;
+                        } else {
+                            nrc = invalidKey;
+                            if (++pap->sec_ctrl.try_cnt > exceedNumberofTrySecurity) {
+                                pap->sec_ctrl.try_max = true;
+                            }
+                        }
+                        pap->sec_ctrl.sds_recv.all = 0;
+                    } else {
+                        nrc = requestSequenceError;
+                    }
+                } else {
+                    nrc = incorrectMessageLengthOrInvalidFormat;
+                }
+                break;
+
+            case REQUEST_KEY2:
+                if (ptp->in.pci.dl == 4) {
+                    if (pap->sec_ctrl.sds_recv.bit.sd2_recv == 1) {
+                        /* todo : caculate the key */
+                        
+                        if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3]) {
+                            ptp->out.pci.dl = 2u;
+                            pap->cur_sec = SECURITY_LEVEL_2;
+                            pos_rsp_flag = true;
+                        } else {
+                            nrc = invalidKey;
+                            if (++pap->sec_ctrl.try_cnt > exceedNumberofTrySecurity) {
+                                pap->sec_ctrl.try_max = true;
+                            }
+                        }
+                        pap->sec_ctrl.sds_recv.all = 0;
+                    } else {
+                        nrc = requestSequenceError;
+                    }
+                } else {
+                    nrc = incorrectMessageLengthOrInvalidFormat;
+                }
+                break;
+
+            case REQUEST_KEY3:
+                if (ptp->in.pci.dl == 5) {
+                    if (pap->sec_ctrl.sds_recv.bit.sd3_recv == 1) {
+                        /* todo : caculate the key */
+
+                        if (pap->sec_ctrl.key[0] == ptp->in.buf[2] && pap->sec_ctrl.key[1] == ptp->in.buf[3] && pap->sec_ctrl.key[2] == ptp->in.buf[4]) {
+                            ptp->out.pci.dl = 2u;
+                            pap->cur_sec = SECURITY_LEVEL_3;
+                            pos_rsp_flag = true;
+                        } else {
+                            nrc = invalidKey;
+                            if (++pap->sec_ctrl.try_cnt > exceedNumberofTrySecurity) {
+                                pap->sec_ctrl.try_max = true;
+                            }
+                        }
+                        pap->sec_ctrl.sds_recv.all = 0;
+                    } else {
+                        nrc = requestSequenceError;
+                    }
+                } else {
+                    nrc = incorrectMessageLengthOrInvalidFormat;
+                }
+                break;
+
+            default:
+                nrc = subfunctionNotSupported;
+                break;
+        }
+
+    } else {
+        nrc = requiredTimeDelayNotExpired;
     }
 
     if (pos_rsp_flag) {
@@ -643,6 +700,11 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
         ptp->out.buf[1] = ptp->in.buf[1];
         
     } else {
+        if (nrc == invalidKey) {
+            pap->sec_ctrl.enable = false;
+            pap->ptmr_sdelay->st = true;
+            pap->ptmr_sdelay->cnt = pap->ptmr_sdelay->val;
+        }
         uds_service_response_negative(pap, ptp, nrc);
     }
 }
@@ -822,19 +884,13 @@ void uds_service_0x3E(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
         }
 
         if ((ptp->in.buf[1] & ~(suppressPosRspMsgIndicationBit)) == zeroSubFunction) {
-            if (pap->cur_ses != DEFAULT_SESSION) {
+            if (pap->cur_ses != defaultSession) {
                 /* todo : restart the timer */
-
+                pap->ptmr_s3->st = true;
+                pap->ptmr_s3->cnt = pap->ptmr_s3->val;
             } 
+            pos_rsp_flag = true;
 
-            if (!(pap->sup_pos_rsp)) {
-                ptp->out.sts = N_STS_REDAY;
-                ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
-                ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
-                ptp->out.pci.dl = 2u;
-
-                pos_rsp_flag = true;
-            } 
         } else {
             nrc = subfunctionNotSupported;
         }
@@ -842,9 +898,18 @@ void uds_service_0x3E(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
         nrc = incorrectMessageLengthOrInvalidFormat;
     }
 
-    if (!(pos_rsp_flag)) {
+    if (pos_rsp_flag) {
+        if (!(pap->sup_pos_rsp)) {
+            ptp->out.sts = N_STS_REDAY;
+            ptp->out.buf[0] = ptp->in.buf[0] + 0x40u;
+            ptp->out.buf[1] = ptp->in.buf[1] & (~(suppressPosRspMsgIndicationBit));
+            ptp->out.pci.dl = 2u;
+        }
+    } else {
         uds_service_response_negative(pap, ptp, nrc);
     }
+     
+    
 }
 
 

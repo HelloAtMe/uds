@@ -14,6 +14,8 @@
 
 
 
+static void uds_tp_process_wc_to(uds_tp_layer_t *ptp);
+static void uds_tp_process_wf_to(uds_tp_layer_t *ptp);
 
 static void uds_tp_process_in_sf(uds_tp_layer_t *ptp, can_std_frame_t *pfr);
 static void uds_tp_process_in_ff(uds_tp_layer_t *ptp, can_std_frame_t *pfr);
@@ -43,6 +45,20 @@ void uds_tp_init(uds_tp_layer_t *ptp)
 
     ptp->out.wf_max     = UDS_TP_WFT_MAX;
     ptp->out.sts        = N_STS_IDLE;
+
+    ptp->out.ptmr_wf            = &uds_timer[0];
+    ptp->out.ptmr_wf->st        = false;
+    ptp->out.ptmr_wf->val       = UDS_TP_WAIT_FC_TIMEOUT;
+    ptp->out.ptmr_wf->act       = uds_tp_process_wf_to;
+    ptp->out.ptmr_wf->parg      = ptp;
+    ptp->out.ptmr_wf->cnt       = UDS_TP_WAIT_FC_TIMEOUT;
+
+    ptp->in.ptmr_wc             = &uds_timer[1];
+    ptp->in.ptmr_wc->st         = false;
+    ptp->in.ptmr_wc->val        = UDS_TP_WAIT_CF_TIMEOUT;
+    ptp->in.ptmr_wc->act        = uds_tp_process_wc_to;
+    ptp->in.ptmr_wc->parg       = ptp;
+    ptp->in.ptmr_wc->cnt        = UDS_TP_WAIT_CF_TIMEOUT;
 }
 
 
@@ -107,7 +123,6 @@ void uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
             } else {
                 ptp->out.pci.pt = N_PCI_SF;
             }
-            // ptp->out.sts = N_STS_BUSY;
         case N_STS_BUSY:
             switch (ptp->out.pci.pt) {
                 case N_PCI_SF:
@@ -146,10 +161,22 @@ void uds_tp_process_out(uds_tp_layer_t *ptp, uds_dl_layer_t *pdl)
  * @param ptp 
  * @return uds_tp_rslt_t 
  */
-void uds_tp_process_to(uds_tp_layer_t *ptp)
+static void uds_tp_process_wc_to(uds_tp_layer_t *ptp)
 {
-
+    ptp->in.sts = N_STS_ERROR;
 }
+
+
+/**
+ * @brief 
+ * 
+ * @param ptp 
+ */
+static void uds_tp_process_wf_to(uds_tp_layer_t *ptp)
+{
+    ptp->out.sts = N_STS_IDLE;
+}
+
 
 
 /**
@@ -171,6 +198,7 @@ static void uds_tp_process_in_sf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
         }
     }
 }
+
 
 /**
  * @brief 
@@ -221,6 +249,9 @@ static void uds_tp_process_in_cf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
     
     // if (ptp->out.sts == N_STS_IDLE && ptp->in.sts == N_STS_BUSY) {
     if (ptp->in.sts == N_STS_BUSY) {
+
+        ptp->in.ptmr_wc->st = false;
+
         ptp->in.pci.sn = pfr->dt[0] & 0x0Fu;
         ptp->in.cf_cnt++;
         if ((ptp->in.cf_cnt % 0x10) == ptp->in.pci.sn) {
@@ -243,6 +274,10 @@ static void uds_tp_process_in_cf(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
                         ptp->out.pci.bs = ptp->in.cfg.bs;
                         ptp->out.pci.stmin = ptp->in.cfg.stmin;
                     }
+
+                    // restart the timer
+                    ptp->in.ptmr_wc->st = true;
+                    ptp->in.ptmr_wc->cnt = ptp->in.ptmr_wc->val;
                 }
             }
         } else {
@@ -262,6 +297,9 @@ static void uds_tp_process_in_fc(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
 {   
     if (ptp->out.sts == N_STS_BUSY_WAIT) {
         ptp->in.pci.fs = pfr->dt[0] & 0x0Fu;
+
+        ptp->out.ptmr_wf->st = false;
+
         switch (ptp->in.pci.fs) {
             case N_FS_CTS:
                 ptp->out.pci.pt = N_PCI_CF;
@@ -284,6 +322,10 @@ static void uds_tp_process_in_fc(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
                     if (ptp->out.wf_cnt < ptp->out.wf_max) {
                         ptp->out.cfg.fs = ptp->in.pci.fs;
                         ptp->out.sts = N_STS_BUSY_WAIT;
+
+                        ptp->out.ptmr_wf->cnt = ptp->out.ptmr_wf->val;
+                        ptp->out.ptmr_wf->st = true;
+
                     } else {
                         ptp->out.sts = N_STS_IDLE;
                     }
@@ -330,6 +372,9 @@ static void uds_tp_process_out_ff(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
     ptp->out.pci.sn = 0;
 
     ptp->out.sts = N_STS_BUSY_WAIT;
+
+    // start the timer
+    ptp->out.ptmr_wf->st = true;
 }
 
 
@@ -378,6 +423,8 @@ static void uds_tp_process_out_fc(uds_tp_layer_t *ptp, can_std_frame_t* pfr)
     pfr->dt[2] = (uint8_t)(ptp->out.pci.stmin);
 
     ptp->out.sts = N_STS_IDLE;
+
+    ptp->in.ptmr_wc->st = true;
 }
 
 

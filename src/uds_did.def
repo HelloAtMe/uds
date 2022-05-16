@@ -12,4 +12,4 @@
     {0x1243, (uint8_t *)helloworld7, 17}, \
 
 
-#define UDS_DID_NUM 9
+#define UDS_DID_NUM 9u

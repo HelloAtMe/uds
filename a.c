@@ -61,6 +61,11 @@ int main(void)
     // }
     // printf("%d\n", sizeof(pk));
 
+    void *hello;
+    int  *hello1;
+    // hello = hello1;
+    hello1 = (int *)hello;
+
     switch (aa)
     {
     case 1:

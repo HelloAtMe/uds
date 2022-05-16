@@ -11,5 +11,28 @@
 
 
 
+#include "uds.h"
 
+
+
+/**
+ * @brief 
+ * 
+ */
+void uds_timer_tick(void) 
+{
+    uint8_t i;
+    uds_timer_t *tmr;
+
+    for (i = 0; i < UDS_TIEMR_NUM; i++) {
+        tmr = &uds_timer[i];
+        if (tmr->st == true) {
+            if (--tmr->cnt == 0) {
+                tmr->act(tmr->parg);
+                tmr->cnt = tmr->val;
+                tmr->st = false;
+            }
+        }
+    }
+}
 

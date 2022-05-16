@@ -90,7 +90,7 @@ void uds_send_frame(can_std_frame_t *fr)
     /* send action */
 #ifdef TEST_WIN32
     for (uint8_t i = 0; i < fr->dlc; i++) {
-        printf("%02x ", fr->dt[i]);
+        printf("%02X ", fr->dt[i]);
     }
     printf("\n");
 #endif

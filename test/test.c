@@ -9,6 +9,7 @@
  * @Copyright (C)  2022  Jixing. all right reserved
 ***********************************************************************/
 
+#include <pthread.h>
 #include "test.h"
 
 

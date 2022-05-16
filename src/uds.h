@@ -77,21 +77,36 @@ uds_q_rslt uds_qflush(uds_q_t *q);
  * @brief timer of uds
  * 
  */
-typedef void (*uds_func_t)(void *ptmr, void *parg);
+typedef void (*uds_func_t)(void *parg);
 
 typedef struct {
     bool_t st;
     uint32_t val;
     uint32_t cnt;
     uds_func_t act;
+    void *parg;
 } uds_timer_t;
 
 
+/**
+ * @brief 
+ * 0 tp -> wait for fc
+ * 1 tp -> wait for cf
+ * 2 ap -> s3
+ * 3 ap -> security delay timeout
+ */
+#define UDS_TIEMR_NUM   4u
+UDS_EXT uds_timer_t uds_timer[UDS_TIEMR_NUM];
 
-void uds_timer_init(uds_timer_t *ptimer, void *parg);
+
+void uds_timer_init(uds_timer_t *ptimer);
+void uds_timer_set_expired_action(uds_timer_t *ptimer, uds_func_t act, void *parg);
+void uds_timer_set_val(uds_timer_t *ptimer, uint32_t val);
+void uds_timer_reload(uds_timer_t *ptimer);
 void uds_timer_start(uds_timer_t *ptimer);
 void uds_timer_stop(uds_timer_t *ptimer);
 
+void uds_timer_tick(void);
 
 
 /** data link layer 
@@ -219,6 +234,7 @@ typedef struct {
     uds_tp_pci_t            pci;
     uds_tp_fc_cfg_t         cfg;        
     uds_tp_stream_sts_t     sts;
+    uds_timer_t            *ptmr_wc;
     uint16_t                cf_cnt;     /* sequence number count */
     uint16_t                buf_pos;
     uint8_t                 buf[UDS_TP_BUF_SZ];
@@ -229,6 +245,7 @@ typedef struct {
     uds_tp_pci_t            pci;
     uds_tp_fc_cfg_t         cfg;        
     uds_tp_stream_sts_t     sts;
+    uds_timer_t            *ptmr_wf;
     uint16_t                cf_cnt;     /* sequence number count */
     uint16_t                wf_max;     /* fs type is wait, and the max received time, if beyond this conut give up to send the remain cf */
     uint16_t                wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain cf */
@@ -349,6 +366,7 @@ typedef struct {
     uint8_t key[3];
     uint8_t try_cnt;
     bool_t  try_max;
+    bool_t  enable;
     union {   
         struct {
             uint8_t sd1_recv:1;        /* seed1 received */
@@ -367,12 +385,12 @@ typedef struct {
         bool_t req;
         bool_t tx;
         bool_t rx;
-    } nor;
+    } nor;                      // normal frame
     struct {
         bool_t req;
         bool_t tx;
         bool_t rx;
-    } net;
+    } net;                      // network manage frame
 } uds_ap_cmm_t;
 
 
@@ -387,16 +405,13 @@ typedef struct {
 typedef struct {
     uds_ap_session_type_t   cur_ses;
     uds_ap_security_level_t cur_sec;
-    // uint8_t                 sec_sts;    /* represent weather server is received coresponding level 1 2 3 seed
-    //                                         bit 1  2  3 */
-    // uint8_t                 seed[3];
-    // uint8_t                 key[3];
-    // bool_t                  sec_exctry;
-    // uint8_t                 sec_try_cnt;
 
     uds_ap_sec_t            sec_ctrl;       /* 0x27 */
     uds_ap_cmm_t            cmm_ctrl;       /* 0x28 */
 
+    uds_timer_t            *ptmr_s3;
+    uds_timer_t            *ptmr_sdelay;
+    
     uds_ap_sts_t            sts;
     bool_t                  sup_pos_rsp;
 } uds_ap_layer_t;
@@ -413,7 +428,7 @@ typedef struct {
 
 
 #define suppressPosRspMsgIndicationBit  0x80u
-#define exceedNumberofSecurity          10
+#define exceedNumberofTrySecurity       10
 
 
 /* SUB-FUNCTION defines */

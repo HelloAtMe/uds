@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.def": "c",
-        ".h":"c"
+        ".h": "c",
+        "uds.h": "c"
     }
 }

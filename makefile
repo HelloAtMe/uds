@@ -99,8 +99,4 @@ b:
 	@echo 'Finish to compile.'
 
 c:
-<<<<<<< HEAD
-	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET).exe $(TARGET_PATH)/$(TARGET).map
-=======
 	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(TARGET_PATH)/$(TARGET).map
->>>>>>> f801c2bdbcf68019ef98bae15f292dc5454a333e
