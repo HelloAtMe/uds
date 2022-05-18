@@ -77,7 +77,7 @@ uds_q_rslt uds_qflush(uds_q_t *q);
  * @brief timer of uds
  * 
  */
-typedef void (*uds_func_t)(void *parg);
+typedef void (*uds_func_t)(void *);
 
 typedef struct {
     bool_t st;
@@ -89,15 +89,21 @@ typedef struct {
 
 
 /**
- * @brief 
+ * @brief B
  * 0 tp -> wait for fc
  * 1 tp -> wait for cf
  * 2 ap -> s3
  * 3 ap -> security delay timeout
  */
-#define UDS_TIEMR_NUM   4u
-UDS_EXT uds_timer_t uds_timer[UDS_TIEMR_NUM];
+#define UDS_TIEMR_NUM       0x05u
 
+#define UDS_N_WAITCF_IND    0x00u
+#define UDS_N_WAITFC_IND    0x01u
+#define UDS_N_STmin_IND     0x02u
+#define UDS_A_S3_IND        0x03u
+#define UDS_A_SADELAY_IND   0x04u
+
+UDS_EXT uds_timer_t uds_timer[UDS_TIEMR_NUM];
 
 void uds_timer_init(uds_timer_t *ptimer);
 void uds_timer_set_expired_action(uds_timer_t *ptimer, uds_func_t act, void *parg);
@@ -410,14 +416,14 @@ typedef struct {
     uds_ap_cmm_t            cmm_ctrl;       /* 0x28 */
 
     uds_timer_t            *ptmr_s3;
-    uds_timer_t            *ptmr_sdelay;
+    uds_timer_t            *ptmr_sadelay;
     
     uds_ap_sts_t            sts;
     bool_t                  sup_pos_rsp;
 } uds_ap_layer_t;
 
 
-typedef void (*uds_ap_fun_t)(void *, void *);
+typedef void (*uds_ap_fun_t)(uds_ap_layer_t *, uds_tp_layer_t *);
 
 typedef struct {
     uds_ap_sid_type_t sid;

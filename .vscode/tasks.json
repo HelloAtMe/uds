@@ -16,7 +16,7 @@
             },
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
             "detail": "调试器生成的任务。"
         },
@@ -37,6 +37,27 @@
             "group": {
                 "kind": "build",
                 "isDefault": false
+            },
+            "detail": "调试器生成的任务。"
+        },
+        {
+            "type": "shell",
+            "label": "all",
+            "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
+            "args": [
+                "WIN32=1",
+                "c",
+                "b"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
             },
             "detail": "调试器生成的任务。"
         }

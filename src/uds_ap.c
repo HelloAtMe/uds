@@ -14,8 +14,8 @@
 
 
 
-static void uds_ap_process_s3_to(uds_ap_layer_t *pap);
-static void uds_ap_process_sdelay_to(uds_ap_layer_t *pap);
+static void uds_ap_process_s3_to(void *pap);
+static void uds_ap_process_sdelay_to(void *pap);
 
 
 void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
@@ -263,8 +263,8 @@ void uds_service_response_negative(uds_ap_layer_t *pap, uds_tp_layer_t *ptp, uds
  */
 const uds_ap_service_t *uds_service_find(uds_ap_sid_type_t sid)
 {   
-    const uds_ap_service_t *uds_service = (uds_ap_service_t *)0;
     uint8_t i;
+    const uds_ap_service_t *uds_service = (uds_ap_service_t *)0;
 
     for (i = 0; i < UDS_SERVICE_NUM; i++) {
         if (uds_service_list[i].sid == sid) {
@@ -290,7 +290,7 @@ void uds_ap_init(uds_ap_layer_t *pap)
 
     pap->sup_pos_rsp = false;
 
-    pap->ptmr_s3 = &uds_timer[2];
+    pap->ptmr_s3 = &uds_timer[UDS_A_S3_IND];
     pap->ptmr_s3->st  = false;
     pap->ptmr_s3->cnt = S3_SERVER_MAX;
     pap->ptmr_s3->val = S3_SERVER_MAX;
@@ -298,12 +298,12 @@ void uds_ap_init(uds_ap_layer_t *pap)
     pap->ptmr_s3->parg = pap;
 
 
-    pap->ptmr_sdelay = &uds_timer[3];
-    pap->ptmr_sdelay->st  = false;
-    pap->ptmr_sdelay->cnt = SECURITY_DELAY_TIME;
-    pap->ptmr_sdelay->val = SECURITY_DELAY_TIME;
-    pap->ptmr_sdelay->act = uds_ap_process_sdelay_to;
-    pap->ptmr_sdelay->parg = pap;
+    pap->ptmr_sadelay = &uds_timer[UDS_A_SADELAY_IND];
+    pap->ptmr_sadelay->st  = false;
+    pap->ptmr_sadelay->cnt = SECURITYACCESS_DELAY_TIME;
+    pap->ptmr_sadelay->val = SECURITYACCESS_DELAY_TIME;
+    pap->ptmr_sadelay->act = uds_ap_process_sdelay_to;
+    pap->ptmr_sadelay->parg = pap;
 
 }
 
@@ -358,11 +358,11 @@ void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
  * 
  * @param pap 
  */
-static void uds_ap_process_s3_to(uds_ap_layer_t *pap)
+static void uds_ap_process_s3_to(void *pap)
 {
-    pap->cur_ses = defaultSession;
-    pap->cur_sec = SECURITY_LEVEL_0;
-    pap->sec_ctrl.sds_recv.all = 0;
+    ((uds_ap_layer_t *)pap)->cur_ses = defaultSession;
+    ((uds_ap_layer_t *)pap)->cur_sec = SECURITY_LEVEL_0;
+    ((uds_ap_layer_t *)pap)->sec_ctrl.sds_recv.all = 0;
 }
 
 
@@ -371,9 +371,9 @@ static void uds_ap_process_s3_to(uds_ap_layer_t *pap)
  * 
  * @param pap 
  */
-static void uds_ap_process_sdelay_to(uds_ap_layer_t *pap)
+static void uds_ap_process_sdelay_to(void *pap)
 {
-    pap->sec_ctrl.enable = true;
+    ((uds_ap_layer_t *)pap)->sec_ctrl.enable = true;
 }
 
 
@@ -702,8 +702,8 @@ void uds_service_0x27(uds_ap_layer_t *pap, uds_tp_layer_t *ptp)
     } else {
         if (nrc == invalidKey) {
             pap->sec_ctrl.enable = false;
-            pap->ptmr_sdelay->st = true;
-            pap->ptmr_sdelay->cnt = pap->ptmr_sdelay->val;
+            pap->ptmr_sadelay->st = true;
+            pap->ptmr_sadelay->cnt = pap->ptmr_sadelay->val;
         }
         uds_service_response_negative(pap, ptp, nrc);
     }

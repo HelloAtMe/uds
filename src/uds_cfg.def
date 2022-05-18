@@ -35,7 +35,7 @@
 #define P2X_SERVER_MAX              0x5000u
 
 #define S3_SERVER_MAX               0x1000u
-#define SECURITY_DELAY_TIME         0x10000u
+#define SECURITYACCESS_DELAY_TIME         0x10000u
 
 
 
