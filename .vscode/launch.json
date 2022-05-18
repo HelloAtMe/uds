@@ -16,7 +16,7 @@
             "externalConsole": false,
             "MIMode": "gdb",
             "miDebuggerPath": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/gdb.exe",//修改gdb路径
-            "preLaunchTask": "b", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+            // "preLaunchTask": "all", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

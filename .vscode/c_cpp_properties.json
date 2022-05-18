@@ -4,14 +4,15 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/Users/jxyun/Cygwin/usr/include"
+                "C:/Users/jxyun/mingw64/include/**"
+  
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
-            "compilerPath": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/gcc.exe"
+            "compilerPath": "C:/Users/jxyun/mingw64/bin/gcc.exe"
         }
     ],
     "version": 4

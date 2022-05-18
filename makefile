@@ -28,10 +28,10 @@ SOURCE_DIR = 	$(PROJ_DIR)src \
 
 #------------------------------  COMPILER INFO  ------------------------------#
 ifdef WIN32
-COMPILER_PATH = C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64
+COMPILER_PATH = C:/Users/jxyun/mingw64
 CC = $(COMPILER_PATH)/bin/gcc.exe
 LD = $(COMPILER_PATH)/bin/gcc.exe
-GCC_INC = $(COMPILER_PATH)/include
+GCC_INC = -I"C:/Users/jxyun/mingw64/x86_64-w64-mingw32/include"
 TARGET_SUFFIX = .exe
 else 
 CC = /usr/bin/gcc
@@ -44,25 +44,28 @@ endif
 #------------------------------ HEADER FILES  ------------------------------#
 PROJ_INC = -I./src \
 			-I./test \
-			-I$(GCC_INC)
+			$(GCC_INC)
 
 
 #------------------------------ COMPILE OPTIONS  ------------------------------#
 CFLAGS	= $(PROJ_INC) \
 		  -O0 \
 		  -g \
-		  -std=gnu11
-
+		  -std=c11
 
 ASFLAGS	= $(PROJ_INC) \
 		  -O0 \
 		  -g \
-		  -std=gnu11
+		  -std=c11
 
 
 #------------------------------ LINK OPTIONS  ------------------------------#
-ifdef (WIN32)
-LDFLAGS = -Wl,-Map, $(TARGET_PATH)/$(TARGET).map
+ifdef WIN32
+LDFLAGS = -Wl,-Map,$(TARGET_PATH)/$(TARGET).map \
+  		-LC:/Users/jxyun/mingw64/x86_64-w64-mingw32/lib \
+		-lwinmm
+
+		  
 else
 LDFLAGS = 
 endif
@@ -79,7 +82,7 @@ OBJ_FILES = $(foreach gf, $(SOURCE_DIR), $(patsubst $(gf)/%.c,$(OBJECT_PATH)/%.o
 #------------------------------ Compiling  ------------------------------#
 $(OBJECT_PATH)/%.o: %.c
 	@echo 'Building file: $<'
-	$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJECT_PATH)/%.o: %.s
 	@echo 'Building file: $<'
@@ -87,7 +90,8 @@ $(OBJECT_PATH)/%.o: %.s
 
 $(TARGET): $(OBJ_FILES)
 	@echo 'Linking files ...'
-	$(LD) -o $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(LDFLAGS) $(OBJ_FILES)
+	$(LD) -o $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(LDFLAGS) $(OBJ_FILES) C:/Users/jxyun/mingw64/x86_64-w64-mingw32/lib/libwinmm.a
+# $(LD) -o $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(LDFLAGS) $(OBJ_FILES) C:/Windows/System32/winmm.dll
 
 .PHONY: all	
 all:
@@ -99,4 +103,5 @@ b:
 	@echo 'Finish to compile.'
 
 c:
+	@echo "delete all objects ..."
 	@$(RM) $(OBJ_FILES) $(TARGET_PATH)/$(TARGET)$(TARGET_SUFFIX) $(TARGET_PATH)/$(TARGET).map

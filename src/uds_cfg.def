@@ -31,11 +31,11 @@
 #define UDS_FILL_VALUE              0xAAu
 
 /* data type for application layer */
-#define P2_SERVER_MAX               0x50u    
-#define P2X_SERVER_MAX              0x5000u
+#define P2_SERVER_MAX               50u    
+#define P2X_SERVER_MAX              5000u
 
-#define S3_SERVER_MAX               0x1000u
-#define SECURITYACCESS_DELAY_TIME         0x10000u
+#define S3_SERVER_MAX               1000u
+#define SECURITYACCESS_DELAY_TIME   1000u
 
 
 

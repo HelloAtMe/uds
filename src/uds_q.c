@@ -50,8 +50,8 @@ uds_q_rslt uds_qdequeue(uds_q_t *q, void *elem, uint16_t sz)
  * @brief put a elem in queue
  * 
  * @param q 
- * @param elem 
- * @param sz 
+ * @param elem          pointer of elem
+ * @param sz            sizeof elem type
  * @return uds_q_rslt 
  */
 uds_q_rslt uds_qenqueue(uds_q_t *q, void *elem, uint16_t sz)
@@ -93,3 +93,5 @@ uds_q_rslt uds_qflush(uds_q_t *q)
 
     return UDS_Q_OK;
 }
+
+

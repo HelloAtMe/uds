@@ -15,7 +15,7 @@
 
 
 static void uds_ap_process_s3_to(void *pap);
-static void uds_ap_process_sdelay_to(void *pap);
+static void uds_ap_process_sadelay_to(void *pap);
 
 
 void uds_service_0x10(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
@@ -299,10 +299,10 @@ void uds_ap_init(uds_ap_layer_t *pap)
 
 
     pap->ptmr_sadelay = &uds_timer[UDS_A_SADELAY_IND];
-    pap->ptmr_sadelay->st  = false;
+    pap->ptmr_sadelay->st  = true;
     pap->ptmr_sadelay->cnt = SECURITYACCESS_DELAY_TIME;
     pap->ptmr_sadelay->val = SECURITYACCESS_DELAY_TIME;
-    pap->ptmr_sadelay->act = uds_ap_process_sdelay_to;
+    pap->ptmr_sadelay->act = uds_ap_process_sadelay_to;
     pap->ptmr_sadelay->parg = pap;
 
 }
@@ -371,7 +371,7 @@ static void uds_ap_process_s3_to(void *pap)
  * 
  * @param pap 
  */
-static void uds_ap_process_sdelay_to(void *pap)
+static void uds_ap_process_sadelay_to(void *pap)
 {
     ((uds_ap_layer_t *)pap)->sec_ctrl.enable = true;
 }

@@ -65,33 +65,3 @@ void uds_dl_process_out(uds_dl_layer_t *pdl)
     }
 }
 
-    
-/**
- * @brief 
- * 
- * @param q 
- * @param fr 
- */
-void uds_recv_frame(uds_q_t *q, can_std_frame_t fr) 
-{
-    if (fr.id == UDS_TP_FUNCTION_ADDR || fr.id == UDS_TP_PHYSICAL_ADDR) {
-        uds_qenqueue(q, &fr, (uint16_t)(sizeof(can_std_frame_t)));
-    }
-}
-
-
-/**
- * @brief 
- * 
- * @param fr 
- */
-void uds_send_frame(can_std_frame_t *fr)
-{
-    /* send action */
-#ifdef TEST_WIN32
-    for (uint8_t i = 0; i < fr->dlc; i++) {
-        printf("%02X ", fr->dt[i]);
-    }
-    printf("\n");
-#endif
-}

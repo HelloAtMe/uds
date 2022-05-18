@@ -88,32 +88,6 @@ typedef struct {
 } uds_timer_t;
 
 
-/**
- * @brief B
- * 0 tp -> wait for fc
- * 1 tp -> wait for cf
- * 2 ap -> s3
- * 3 ap -> security delay timeout
- */
-#define UDS_TIEMR_NUM       0x05u
-
-#define UDS_N_WAITCF_IND    0x00u
-#define UDS_N_WAITFC_IND    0x01u
-#define UDS_N_STmin_IND     0x02u
-#define UDS_A_S3_IND        0x03u
-#define UDS_A_SADELAY_IND   0x04u
-
-UDS_EXT uds_timer_t uds_timer[UDS_TIEMR_NUM];
-
-void uds_timer_init(uds_timer_t *ptimer);
-void uds_timer_set_expired_action(uds_timer_t *ptimer, uds_func_t act, void *parg);
-void uds_timer_set_val(uds_timer_t *ptimer, uint32_t val);
-void uds_timer_reload(uds_timer_t *ptimer);
-void uds_timer_start(uds_timer_t *ptimer);
-void uds_timer_stop(uds_timer_t *ptimer);
-
-void uds_timer_tick(void);
-
 
 /** data link layer 
  *  only support the classic can and standard id
@@ -170,8 +144,6 @@ void uds_dl_process_out(uds_dl_layer_t *pdl);
 */
 #define UDS_TP_BUF_SZ                   512u
 
-#define UDS_TP_WAIT_FC_TIMEOUT          (UDS_TP_As + UDS_TP_Bs)  /* when we are a sender */
-#define UDS_TP_WAIT_CF_TIMEOUT          (UDS_TP_Cr)              /* when we are a receiver, and we got a cf already. */
 
 
 typedef enum {
@@ -474,12 +446,33 @@ void uds_ap_init(uds_ap_layer_t *pap);
 void uds_ap_process(uds_ap_layer_t *pap, uds_tp_layer_t *ptp);
 
 
+
 /**
  * @brief api of uds
- * 
+ *  include 
  */
-// void uds_init();
-// void uds_process();
+
+#define UDS_TIEMR_NUM       0x04u
+#define UDS_N_WAITCF_IND    0x00u
+#define UDS_N_WAITFC_IND    0x01u
+#define UDS_A_S3_IND        0x02u
+#define UDS_A_SADELAY_IND   0x03u
+
+#define UDS_TP_WAIT_FC_TIMEOUT          (UDS_TP_As + UDS_TP_Bs)  /* when we are a sender */
+#define UDS_TP_WAIT_CF_TIMEOUT          (UDS_TP_Cr)              /* when we are a receiver, and we got a cf already. */
+
+
+UDS_EXT uds_timer_t uds_timer[UDS_TIEMR_NUM];
+
+UDS_EXT uds_dl_layer_t uds_dl;
+UDS_EXT uds_tp_layer_t uds_tp;
+UDS_EXT uds_ap_layer_t uds_ap;
+
+
+void uds_init(void);
+void uds_process(void);
+void uds_timer_tick(void);
+
 void uds_recv_frame(uds_q_t *q, can_std_frame_t fr);
 void uds_send_frame(can_std_frame_t *fr);
 

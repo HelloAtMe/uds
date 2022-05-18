@@ -3,7 +3,7 @@
         {
             "type": "shell",
             "label": "b",
-            "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
+            "command": "C:/Users/jxyun/mingw64/bin/mingw32-make.exe",
             "args": [
                 "WIN32=1",
                 "b"
@@ -23,7 +23,7 @@
         {
             "type": "shell",
             "label": "c",
-            "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
+            "command": "C:/Users/jxyun/mingw64/bin/mingw32-make.exe",
             "args": [
                 "WIN32=1",
                 "c"
@@ -43,7 +43,7 @@
         {
             "type": "shell",
             "label": "all",
-            "command": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/mingw32-make.exe",
+            "command": "C:/Users/jxyun/mingw64/bin/mingw32-make.exe",
             "args": [
                 "WIN32=1",
                 "c",
