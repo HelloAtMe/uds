@@ -115,12 +115,6 @@ typedef struct {
 } uds_dl_iostream_t;
 
 
-// typedef struct {
-//     uds_dl_sts_t        sts;
-//     can_std_frame_t     buf;
-// } uds_dl_outstream_t;
-
-
 typedef struct {
     uds_dl_iostream_t  in;
     uds_dl_iostream_t  out;
@@ -212,7 +206,7 @@ typedef struct {
     uds_tp_pci_t            pci;
     uds_tp_fc_cfg_t         cfg;        
     uds_tp_stream_sts_t     sts;
-    uds_timer_t            *ptmr_wc;
+    uds_timer_t            *ptmr_wc;    /* we are a receiver, when we send fc or already receive cf, the timer wait for remained cfs */
     uint16_t                cf_cnt;     /* sequence number count */
     uint16_t                buf_pos;
     uint8_t                 buf[UDS_TP_BUF_SZ];
@@ -221,9 +215,9 @@ typedef struct {
 
 typedef struct {
     uds_tp_pci_t            pci;
-    uds_tp_fc_cfg_t         cfg;        
+    uds_tp_fc_cfg_t         cfg;        /* when received multiframe, we want the sender will follow this rules */
     uds_tp_stream_sts_t     sts;
-    uds_timer_t            *ptmr_wf;
+    uds_timer_t            *ptmr_wf;    /* we are a sender, when we send ff, the timer wait for fc */
     uint16_t                cf_cnt;     /* sequence number count */
     uint16_t                wf_max;     /* fs type is wait, and the max received time, if beyond this conut give up to send the remain cf */
     uint16_t                wf_cnt;     /* if wf_cnt == wf_max, giveup send the remain cf */

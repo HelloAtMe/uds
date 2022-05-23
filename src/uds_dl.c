@@ -31,9 +31,9 @@ void uds_dl_init(uds_dl_layer_t *pdl)
     pdl->in_qf.qsize     = UDS_DL_IN_SZ;
     pdl->in.sts          = L_STS_IDLE;
 
-    pdl->out.fr.id  = UDS_TP_TRANSPORT_ADDR; 
-    pdl->out.fr.dlc = UDS_DL_CAN_DL;
-    pdl->out.sts    = L_STS_IDLE;
+    pdl->out.fr.id       = UDS_TP_TRANSPORT_ADDR;
+    pdl->out.fr.dlc      = UDS_DL_CAN_DL;
+    pdl->out.sts         = L_STS_IDLE;
 }
 
 
@@ -44,11 +44,9 @@ void uds_dl_init(uds_dl_layer_t *pdl)
  */
 void uds_dl_process_in(uds_dl_layer_t *pdl)
 {   
-    
     if (uds_qdequeue(&pdl->in_qf, &pdl->in.fr, (uint16_t)(sizeof(can_std_frame_t))) == UDS_Q_OK) {
         pdl->in.sts = L_STS_READY;
     }
-    
 }
 
 

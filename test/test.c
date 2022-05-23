@@ -10,10 +10,12 @@
 ***********************************************************************/
 
 #include "test.h"
+
+// cheader timer for windows
 #include <windows.h>
 #include <mmsystem.h>
 
-// timer for windows
+
 
 
 
@@ -24,7 +26,9 @@ can_std_frame_t fr[] = {
     {0x7e2, 8, {0x02, 0x10, 0x03}},
     {0x7e2, 8, {0x02, 0x27, 0x01}},
     {0x7e2, 8, {0x04, 0x27, 0x02, 0x99, 0x11}},
-    {0x7e2, 8, {0x07, 0x22, 0x12, 0x34, 0x12, 0x35, 0x12, 0x43}},
+    {0x7e2, 8, {0x10, 0x09, 0x22, 0x12, 0x34, 0x12, 0x35, 0x12}},
+    {0x700, 8, {0x21, 0x43, 0x12, 0x37}},
+    {0x7e2, 8, {0x21, 0x43, 0x12, 0x37}},
     {0x7e2, 8, {0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
     {0x7e2, 8, {0x04, 0x2e, 0x12, 0x34, 0x55}},
     {0x7e2, 8, {0x02, 0x10, 0x01}},
@@ -58,17 +62,17 @@ int main(void)
 	while (true){
         if (timerCount > SECURITYACCESS_DELAY_TIME) {
             if (fr_i < FR_NUM) {
-                uds_recv_frame(&uds_dl.in_qf, fr[fr_i++]);
+                    uds_recv_frame(&uds_dl.in_qf, fr[fr_i++]);
             } else {
                 stop = true;
             }
         } 
         uds_process();
-        printf("main: %ld\n", timerCount);
+        // printf("main: %ld\n", timerCount);
 
-        if ((!uds_dl.in_qf.qentries) && stop) {
-            break;
-        }
+        // if ((!uds_dl.in_qf.qentries) && stop) {
+        //     break;
+        // }
 
     }
 

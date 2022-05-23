@@ -5,6 +5,38 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "C++ Launch0",
+            "type": "cppdbg",
+            "request": "launch", // launch; attach
+            "program": "${workspaceFolder}/out/main.exe",//修改运行的exe名称
+            "args": [],
+            // "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/gdb.exe",//修改gdb路径
+            "preLaunchTask": "b", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }, 
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "b main",
+                    "ignoreFailures": false
+                },
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "interrupt",
+                    "ignoreFailures": false
+                }
+                
+            ],
+        },
+        {
             "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch", // launch; attach
@@ -16,7 +48,7 @@
             "externalConsole": false,
             "MIMode": "gdb",
             "miDebuggerPath": "C:/Users/jxyun/AppData/Local/Nuitka/Nuitka/gcc/x86_64/mingw64/bin/gdb.exe",//修改gdb路径
-            // "preLaunchTask": "all", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+            "preLaunchTask": "all", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
